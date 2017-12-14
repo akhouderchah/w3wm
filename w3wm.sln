@@ -1,0 +1,28 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2013
+VisualStudioVersion = 12.0.30723.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "w3wm", "w3wm\w3wm.vcxproj", "{1DA96CC7-6CC7-4CC0-9BA2-5A0797BC41D9}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "w3_DLL", "w3_DLL\w3_DLL.vcxproj", "{E72494B8-6B43-4917-BD5E-C874B618835C}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Win32 = Debug|Win32
+		Release|Win32 = Release|Win32
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{1DA96CC7-6CC7-4CC0-9BA2-5A0797BC41D9}.Debug|Win32.ActiveCfg = Debug|Win32
+		{1DA96CC7-6CC7-4CC0-9BA2-5A0797BC41D9}.Debug|Win32.Build.0 = Debug|Win32
+		{1DA96CC7-6CC7-4CC0-9BA2-5A0797BC41D9}.Release|Win32.ActiveCfg = Release|Win32
+		{1DA96CC7-6CC7-4CC0-9BA2-5A0797BC41D9}.Release|Win32.Build.0 = Release|Win32
+		{E72494B8-6B43-4917-BD5E-C874B618835C}.Debug|Win32.ActiveCfg = Debug|Win32
+		{E72494B8-6B43-4917-BD5E-C874B618835C}.Debug|Win32.Build.0 = Debug|Win32
+		{E72494B8-6B43-4917-BD5E-C874B618835C}.Release|Win32.ActiveCfg = Release|Win32
+		{E72494B8-6B43-4917-BD5E-C874B618835C}.Release|Win32.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
