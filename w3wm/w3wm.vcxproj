@@ -76,6 +76,7 @@
     <ClCompile Include="w3_Hotkey.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="w3_Context.h" />
     <ClInclude Include="w3_Hotkey.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

@@ -10,40 +10,12 @@ HWND hAppWnd = 0;
 
 bool bHotkeysSet = false;
 
-// Map of key -> HotkeyDef
-// Note that memory in the shared segment must be initialized
-HotkeyDef gs_Hotkeys[256] = { 0, 0, 0, 0, 0, 0, 0, 0,
-							  0, 0, 0, 0, 0, 0, 0, 0,
-							  0, 0, 0, 0, 0, 0, 0, 0,
-							  0, 0, 0, 0, 0, 0, 0, 0,
-							  0, 0, 0, 0, 0, 0, 0, 0,
-							  0, 0, 0, 0, 0, 0, 0, 0,
-							  0, 0, 0, 0, 0, 0, 0, 0,
-							  0, 0, 0, 0, 0, 0, 0, 0,
-							  0, 0, 0, 0, 0, 0, 0, 0,
-							  0, 0, 0, 0, 0, 0, 0, 0,
-							  0, 0, 0, 0, 0, 0, 0, 0,
-							  0, 0, 0, 0, 0, 0, 0, 0,
-							  0, 0, 0, 0, 0, 0, 0, 0,
-							  0, 0, 0, 0, 0, 0, 0, 0,
-							  0, 0, 0, 0, 0, 0, 0, 0,
-							  0, 0, 0, 0, 0, 0, 0, 0,
-							  0, 0, 0, 0, 0, 0, 0, 0,
-							  0, 0, 0, 0, 0, 0, 0, 0,
-							  0, 0, 0, 0, 0, 0, 0, 0,
-							  0, 0, 0, 0, 0, 0, 0, 0,
-							  0, 0, 0, 0, 0, 0, 0, 0,
-							  0, 0, 0, 0, 0, 0, 0, 0,
-							  0, 0, 0, 0, 0, 0, 0, 0,
-							  0, 0, 0, 0, 0, 0, 0, 0,
-							  0, 0, 0, 0, 0, 0, 0, 0,
-							  0, 0, 0, 0, 0, 0, 0, 0,
-							  0, 0, 0, 0, 0, 0, 0, 0,
-							  0, 0, 0, 0, 0, 0, 0, 0,
-							  0, 0, 0, 0, 0, 0, 0, 0,
-							  0, 0, 0, 0, 0, 0, 0, 0,
-							  0, 0, 0, 0, 0, 0, 0, 0,
-							  0, 0, 0, 0, 0, 0, 0, 0 };
+// Each element is a bitfield indicating if a certain combination
+// of modifiers, plus the given main key, has a hotkey mapped to it
+UINT16 gs_ActiveKeys[256] = {};
+
+// Unordered list of hotkeys
+HotkeyDef gs_Hotkeys[256] = {};
 #pragma data_seg()
 
 HMODULE hInstance = 0;
@@ -73,23 +45,32 @@ LRESULT CALLBACK LLKeyboardProc( int code, WPARAM wParam, LPARAM lParam )
 	}
 
 	tagKBDLLHOOKSTRUCT *pKbStruct = (tagKBDLLHOOKSTRUCT*)lParam;
-	HotkeyDef &hotkey = gs_Hotkeys[pKbStruct->vkCode];
-	if(hotkey.m_MainKey != 0 && (wParam == WM_KEYDOWN || wParam == WM_SYSKEYDOWN))
+	UINT8 keyDown = pKbStruct->vkCode;
+	UINT16 keyFlag = gs_ActiveKeys[keyDown];
+	if(keyFlag != 0 && (wParam == WM_KEYDOWN || wParam == WM_SYSKEYDOWN))
 	{
-		if( ((hotkey.m_Modifiers & EM_WIN) && !(GetAsyncKeyState(VK_LWIN) & 0x8000) &&
-				!(GetAsyncKeyState(VK_RWIN) & 0x8000)) ||
-			((hotkey.m_Modifiers & EM_CTRL) && !(GetAsyncKeyState(VK_CONTROL) & 0x8000)) ||
-			((hotkey.m_Modifiers & EM_SHIFT) && !(GetAsyncKeyState(VK_SHIFT) & 0x8000)) ||
-			((hotkey.m_Modifiers & EM_ALT) && !(GetAsyncKeyState(VK_MENU) & 0x8000)) )
-		{
-			goto exit;
-		}
+		UINT16 mods = 0;
+		mods |= EM_CTRL * !!(GetAsyncKeyState(VK_CONTROL) & 0x8000);
+		mods |= EM_ALT * !!(GetAsyncKeyState(VK_MENU) & 0x8000);
+		mods |= EM_WIN * (!!(GetAsyncKeyState(VK_LWIN) & 0x8000) || !!(GetAsyncKeyState(VK_RWIN) & 0x8000));
+		mods |= EM_SHIFT * !!(GetAsyncKeyState(VK_SHIFT) & 0x8000);
 
-		SendMessage(hAppWnd, WM_HOTKEY, 99, hotkey.m_HotkeyID);
-		return 1;
+		if(keyFlag & (1 << mods))
+		{
+			HotkeyDef *pHotkey = gs_Hotkeys;
+			while(1)
+			{
+				if(pHotkey->m_MainKey == keyDown && pHotkey->m_Modifiers == mods)
+				{
+					SendMessage(hAppWnd, WM_HOTKEY, 99, pHotkey->m_HotkeyID);
+					return 1;
+				}
+
+				++pHotkey;
+			}
+		}
 	}
 
-exit:
 	return CallNextHookEx( hKeyboardHook, code, wParam, lParam );
 }
 
@@ -112,14 +93,15 @@ void W3_DLL_API SetHotkeys(HotkeyDef *pHotkeyDefs, size_t hotkeyCount)
 	{
 		for(int i = 0; i < 256; ++i)
 		{
+			gs_ActiveKeys[i] = 0;
 			gs_Hotkeys[i] = {0, 0, 0};
 		}
 	}
 
-	// @TODO - add support for multiple hotkeys w/same main key
 	for(size_t i = 0; i < hotkeyCount; ++i)
 	{
-		gs_Hotkeys[pHotkeyDefs[i].m_MainKey] = pHotkeyDefs[i];
+		gs_ActiveKeys[pHotkeyDefs[i].m_MainKey] |= (1 << pHotkeyDefs[i].m_Modifiers);
+		gs_Hotkeys[i] = pHotkeyDefs[i];
 	}
 
 	bHotkeysSet = true;

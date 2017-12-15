@@ -26,5 +26,8 @@
     <ClInclude Include="w3_Hotkey.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="w3_Context.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
