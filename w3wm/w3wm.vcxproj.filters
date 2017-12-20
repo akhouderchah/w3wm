@@ -21,12 +21,24 @@
     <ClCompile Include="w3_Hotkey.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="w3_Context.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="w3_Monitor.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="w3_Hotkey.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="w3_Context.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="w3_Core.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="w3_Monitor.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

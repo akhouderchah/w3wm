@@ -73,11 +73,15 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="w3_Context.cpp" />
     <ClCompile Include="w3_Hotkey.cpp" />
+    <ClCompile Include="w3_Monitor.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="w3_Context.h" />
+    <ClInclude Include="w3_Core.h" />
     <ClInclude Include="w3_Hotkey.h" />
+    <ClInclude Include="w3_Monitor.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
