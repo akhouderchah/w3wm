@@ -13,13 +13,19 @@ public:
 
 	bool Restart();
 
+	void OpenConsole();
+	void LockScreen();
+
 private:
 	bool Start();
-	void UpdateHotkeys();
+	bool UpdateHotkeys(PTCHAR iniDir);
 
 private:
 	HWND m_Hwnd;
-	MonitorQuadTree m_Monitors;
+	HMODULE m_HUserDLL;
+	MonitorGrid m_Monitors;
 
 	bool m_IsInitialized;
+
+	TCHAR m_CmdPath[256];
 };

@@ -33,10 +33,8 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			switch(lParam)
 			{
 				case EH_WND_CLOSE:
-					WinExec("C:\\Program Files\\CMake\\bin\\cmake-gui.exe", SW_RESTORE);
 					break;
 				case EH_WND_MOVE_DOWN:
-					WinExec("C:\\Windows\\System32\\cmd.exe", SW_RESTORE);
 					break;
 				case EH_W3WM_CLOSE:
 					g_Context.Shutdown();
@@ -44,6 +42,12 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 					break;
 				case EH_W3WM_RESTART:
 					g_Context.Restart();
+					break;
+				case EH_W3WM_LOCK:
+					g_Context.LockScreen();
+					break;
+				case EH_W3WM_OPEN_CONSOLE:
+					g_Context.OpenConsole();
 					break;
 				default:
 					break;

@@ -33,7 +33,9 @@ void ParseHotkey(HotkeyDef *pHotkey, LPCTSTR str);
 	f(WND_MOVE_DOWN, 'T', 0) \
 	f(WND_CLOSE, 'L', EM_WIN) \
 	f(W3WM_CLOSE, 'Q', EM_WIN) \
-	f(W3WM_RESTART, 'R', EM_WIN)
+	f(W3WM_RESTART, 'R', EM_WIN) \
+	f(W3WM_LOCK, VK_HOME, EM_WIN) \
+	f(W3WM_OPEN_CONSOLE, VK_RETURN, EM_WIN)
 
 #define F_HOTKEY_ENUM(name, defaultKey, defaultMod) \
 	EH_ ## name,

@@ -75,11 +75,12 @@
     <ClCompile Include="main.cpp" />
     <ClCompile Include="w3_Context.cpp" />
     <ClCompile Include="w3_Hotkey.cpp" />
-    <ClCompile Include="w3_Monitor.cpp" />
+    <ClCompile Include="w3_Grid.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="w3_Context.h" />
     <ClInclude Include="w3_Core.h" />
+    <ClInclude Include="w3_Grid.h" />
     <ClInclude Include="w3_Hotkey.h" />
     <ClInclude Include="w3_Monitor.h" />
   </ItemGroup>

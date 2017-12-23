@@ -24,7 +24,7 @@
     <ClCompile Include="w3_Context.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="w3_Monitor.cpp">
+    <ClCompile Include="w3_Grid.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -39,6 +39,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="w3_Monitor.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="w3_Grid.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

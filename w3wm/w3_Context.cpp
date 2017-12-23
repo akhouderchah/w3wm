@@ -14,6 +14,7 @@ MonitorInfo g_PrimaryMonitor;
 bool g_IsPrimarySet = false;
 
 w3Context::w3Context() :
+	m_HUserDLL(NULL),
 	m_IsInitialized(false)
 {}
 
@@ -46,6 +47,13 @@ bool w3Context::Initialize(HINSTANCE hInstance)
 		return false;
 	}
 
+	m_HUserDLL = GetModuleHandle(_T("USER32.DLL"));
+	if(!m_HUserDLL)
+	{
+		MessageBoxEx(NULL, _T("w3wm failed to get USER32.DLL"), _T("Error"), MB_OK | MB_ICONERROR, 0);
+		return false;
+	}
+
 	InstallHooks(m_Hwnd);
 
 	return Start();
@@ -65,6 +73,16 @@ bool w3Context::Restart()
 	return Start();
 }
 
+void w3Context::LockScreen()
+{
+	LockWorkStation();
+}
+
+void w3Context::OpenConsole()
+{
+	WinExec(m_CmdPath, SW_RESTORE);
+}
+
 bool w3Context::Start()
 {
 	if(!EnumDisplayMonitors(NULL, NULL, MonitorProc, 0))
@@ -79,19 +97,29 @@ bool w3Context::Start()
 		return false;
 	}
 
+	/* TODO
 	m_Monitors.Initialize(g_PrimaryMonitor);
 	for(MonitorInfo &info : g_SecondaryMonitors)
 	{
 		m_Monitors.Insert(info);
 	}
+	*/
 	g_SecondaryMonitors.clear();
 
-	UpdateHotkeys();
+	TCHAR iniDir[512];
+	GetCurrentDirectory(512, iniDir);
+	_tcscat_s(iniDir, 100, _T("\\config.ini"));
+
+	if(UpdateHotkeys(iniDir))
+	{
+		// Get cmd exe from ini
+		GetPrivateProfileString(_T("Applications"), _T("Cmd"), _T("C:\\Windows\\System32\\cmd.exe"), m_CmdPath, 512, iniDir);
+	}
 
 	return true;
 }
 
-void w3Context::UpdateHotkeys()
+bool w3Context::UpdateHotkeys(PTCHAR iniDir)
 {
 	// Initialize hotkeys with the defaults
 	HotkeyDef defs[] = { HOTKEYS(F_HOTKEY_ARR) };
@@ -99,10 +127,6 @@ void w3Context::UpdateHotkeys()
 	// Modify defaults with the ini
 	LPCTSTR names[] = { HOTKEYS(F_HOTKEY_NAME_ARR) };
 	int max = ARR_SIZE(names);
-
-	TCHAR iniDir[512];
-	GetCurrentDirectory(512, iniDir);
-	_tcscat_s(iniDir, 100, _T("\\config.ini"));
 
 	if(!PathFileExists(iniDir))
 	{
@@ -123,6 +147,8 @@ void w3Context::UpdateHotkeys()
 
 	// Inform DLL of hotkey mappings
 	SetHotkeys(defs, ARR_SIZE(defs));
+
+	return (max != 0);
 }
 
 BOOL CALLBACK MonitorProc(HMONITOR hMonitor, HDC hdcMonitor, LPRECT lprcMonitor, LPARAM dwData)
