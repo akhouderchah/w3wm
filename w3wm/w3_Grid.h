@@ -27,6 +27,7 @@ struct _GridNode
 	enum EGridFlags
 	{
 		EGF_HEAD = 0x1,
+		EGF_PRIMARY = 0x2,
 	};
 };
 
@@ -42,7 +43,7 @@ struct _GridNode
  * similar to a circularly linked list with a dummy node. The dummy nodes of each column is at the
  * "top" of the column, and these dummy nodes are connected to each other to form a "dummy list",
  * which is a circularly linked list of column heads. In addition, all nodes have left and right
- * neighbors, which roughly forms a set circularly linked rows (i.e. starting from any node and
+ * neighbors, which roughly forms a set of circularly linked rows (i.e. starting from any node and
  * moving left/right, one will eventually have a cycle. The starting node may not be a part of
  * this cycle, however).
  */
@@ -91,5 +92,10 @@ protected:
 template <typename T>
 struct GridNode : public _GridNode
 {
+	GridNode(const T &d, UINT8 startFlags=0, _GridNode *defaultNeighbor=nullptr) :
+		_GridNode(defaultNeighbor, startFlags), data(d){}
+
+	inline void MakeHead(){ flags |= EGF_HEAD; for(int i = 0; i < EGD_COUNT; ++i)pNeighbors[i] = this; }
+
 	T data;
 };

@@ -97,13 +97,11 @@ bool w3Context::Start()
 		return false;
 	}
 
-	/* TODO
-	m_Monitors.Initialize(g_PrimaryMonitor);
+	m_Monitors.Insert(g_PrimaryMonitor);
 	for(MonitorInfo &info : g_SecondaryMonitors)
 	{
 		m_Monitors.Insert(info);
 	}
-	*/
 	g_SecondaryMonitors.clear();
 
 	TCHAR iniDir[512];

@@ -12,7 +12,18 @@ struct MonitorInfo
 class MonitorGrid : public _LinkedGrid
 {
 public:
+	MonitorGrid();
 	~MonitorGrid(){ Clear(); }
 
 	bool Insert(MonitorInfo &info);
+
+	const MonitorInfo &GetCurrentMonitor() const;
+	const MonitorInfo &Move(EGridDirection direction);
+
+	bool IsEmpty() const{ return m_pCurrentNode == nullptr; }
+
+	void Clear();
+
+private:
+	GridNode<MonitorInfo> *m_pCurrentNode;
 };

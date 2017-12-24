@@ -16,7 +16,7 @@ _GridNode::_GridNode(_GridNode *defaultNeighbor/* =nullptr */, UINT8 startFlags 
 }
 
 _LinkedGrid::_LinkedGrid() :
-	m_PrimaryDummy(&m_PrimaryDummy, _GridNode::EGF_HEAD)
+	m_PrimaryDummy(&m_PrimaryDummy, _GridNode::EGF_HEAD | _GridNode::EGF_PRIMARY)
 {}
 
 _LinkedGrid::~_LinkedGrid(){}
@@ -98,6 +98,9 @@ void _LinkedGrid::Remove(_GridNode *pNode)
 		// Link nodes on left to nodes on right
 		_GridNode *pLeftNext = pLeftHead->pNeighbors[EGD_DOWN];
 		_GridNode *pRightNext = pRightHead->pNeighbors[EGD_DOWN];
+
+		assert(pLeftHead->pNeighbors[EGD_DOWN] != pLeftHead);
+		assert(pRightHead->pNeighbors[EGD_DOWN] != pRightHead);
 
 		while(pLeftNext != pLeftHead && pRightNext != pRightHead)
 		{

@@ -76,6 +76,7 @@
     <ClCompile Include="w3_Context.cpp" />
     <ClCompile Include="w3_Hotkey.cpp" />
     <ClCompile Include="w3_Grid.cpp" />
+    <ClCompile Include="w3_Monitor.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="w3_Context.h" />
