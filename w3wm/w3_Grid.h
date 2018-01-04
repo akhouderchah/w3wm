@@ -21,6 +21,9 @@ struct _GridNode
 {
 	_GridNode(_GridNode *defaultNeighbor=nullptr, UINT8 startFlags=0);
 
+	inline bool IsHead() const{ return flags & (UINT8)EGF_HEAD; }
+	inline bool IsPrimary() const{ return flags & (UINT8)EGF_PRIMARY; }
+
 	_GridNode *pNeighbors[EGD_COUNT];
 	UINT8 flags;
 

@@ -20,7 +20,7 @@ public:
 	const MonitorInfo &GetCurrentMonitor() const;
 	const MonitorInfo &Move(EGridDirection direction);
 
-	bool IsEmpty() const{ return m_pCurrentNode == nullptr; }
+	inline bool IsEmpty() const{ return m_pCurrentNode == nullptr; }
 
 	void Clear();
 

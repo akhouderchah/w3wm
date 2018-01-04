@@ -6,6 +6,7 @@
 #pragma comment(linker, "/SECTION:.SHARED,RWS")
 #pragma data_seg(".SHARED")
 HHOOK hKeyboardHook = 0;
+HHOOK hCBTHook = 0;
 HWND hAppWnd = 0;
 
 bool bHotkeysSet = false;
@@ -37,9 +38,9 @@ BOOL APIENTRY DllMain( HMODULE hModule,
 	return TRUE;
 }
 
-LRESULT CALLBACK LLKeyboardProc( int code, WPARAM wParam, LPARAM lParam )
+LRESULT CALLBACK LLKeyboardProc(int code, WPARAM wParam, LPARAM lParam)
 {
-	if( code != 0 )
+	if(code != 0)
 	{
 		return CallNextHookEx( hKeyboardHook, code, wParam, lParam );
 	}
@@ -74,16 +75,36 @@ LRESULT CALLBACK LLKeyboardProc( int code, WPARAM wParam, LPARAM lParam )
 	return CallNextHookEx( hKeyboardHook, code, wParam, lParam );
 }
 
+LRESULT CALLBACK CBTProc(int nCode, WPARAM wParam, LPARAM lParam)
+{
+	if(nCode < 0)
+	{
+		return CallNextHookEx(hCBTHook, nCode, wParam, lParam);
+	}
+
+	switch(nCode)
+	{
+	case HCBT_MOVESIZE:
+	case HCBT_SYSCOMMAND:
+		return 1;
+	default:
+		return CallNextHookEx(hCBTHook, nCode, wParam, lParam);
+	}
+}
+
 void W3_DLL_API InstallHooks(HWND appWnd)
 {
 	hKeyboardHook = SetWindowsHookEx(WH_KEYBOARD_LL, LLKeyboardProc, hInstance, 0);
+	hCBTHook = SetWindowsHookEx(WH_CBT, CBTProc, hInstance, 0);
 	hAppWnd = appWnd;
 }
 
 void W3_DLL_API RemoveHooks(void)
 {
 	UnhookWindowsHookEx(hKeyboardHook);
+	UnhookWindowsHookEx(hCBTHook);
 	hKeyboardHook = 0;
+	hCBTHook = 0;
 	hAppWnd = 0;
 }
 

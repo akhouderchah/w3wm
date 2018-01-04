@@ -6,7 +6,7 @@
 
 w3Context g_Context;
 
-int WINAPI _tWinMain(HINSTANCE hInstance, HINSTANCE, LPTSTR, int)
+int WINAPI _tWinMain(HINSTANCE hInstance, HINSTANCE, LPTSTR, int nCmdShow)
 {
 	g_Context.Initialize(hInstance);
 
@@ -50,9 +50,27 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 					g_Context.OpenConsole();
 					break;
 				default:
-					break;
+					goto ignoreMsg;
 			}
+			break;
 		default:
+			if(message == g_Context.GetShellMsgID())
+			{
+				switch(wParam)
+				{
+				case HSHELL_WINDOWCREATED:
+					break;
+				case HSHELL_WINDOWDESTROYED:
+					break;
+				case HSHELL_WINDOWACTIVATED:
+				case HSHELL_RUDEAPPACTIVATED:
+					break;
+				default:
+					goto ignoreMsg;
+				}
+				break;
+			}
+			ignoreMsg:
 			return DefWindowProc(hWnd, message, wParam, lParam);
 	}
 

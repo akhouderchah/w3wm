@@ -21,63 +21,6 @@ _LinkedGrid::_LinkedGrid() :
 
 _LinkedGrid::~_LinkedGrid(){}
 
-/*
-bool _LinkedGrid::Insert(MonitorInfo &info)
-{
-	// @TODO - Add vertical logic also
-
-	GridNode<MonitorInfo> *pTestNode = nullptr, *pCurrNode = m_pPrimaryNode;
-
-	GridNode<MonitorInfo> *pNewNode = new (std::nothrow) GridNode<MonitorInfo>{ {}, info };
-	if(!pNewNode)
-	{
-		return false;
-	}
-
-	while(1)
-	{
-		if(info.screenBounds.left > pCurrNode->data.screenBounds.left)
-		{
-			pTestNode = pCurrNode->pNeighbors[EGD_RIGHT];
-			if(info.screenBounds.left < pTestNode->data.screenBounds.left || pCurrNode == pTestNode)
-			{
-				// Insert between current and test nodes
-				pCurrNode->pNeighbors[EGD_RIGHT] = pNewNode;
-				pTestNode->pNeighbors[EGD_LEFT] = pNewNode;
-
-				pNewNode->pNeighbors[EGD_RIGHT] = pTestNode;
-				pNewNode->pNeighbors[EGD_LEFT] = pCurrNode;
-				pNewNode->pNeighbors[EGD_UP] = pNewNode;
-				pNewNode->pNeighbors[EGD_DOWN] = pNewNode;
-
-				break;
-			}
-		}
-		else
-		{
-			pTestNode = pCurrNode->pNeighbors[EGD_LEFT];
-			if(info.screenBounds.left > pTestNode->data.screenBounds.left || pCurrNode == pTestNode)
-			{
-				// Insert between current and test nodes
-				pCurrNode->pNeighbors[EGD_LEFT] = pNewNode;
-				pTestNode->pNeighbors[EGD_RIGHT] = pNewNode;
-
-				pNewNode->pNeighbors[EGD_LEFT] = pTestNode;
-				pNewNode->pNeighbors[EGD_RIGHT] = pCurrNode;
-				pNewNode->pNeighbors[EGD_UP] = pNewNode;
-				pNewNode->pNeighbors[EGD_DOWN] = pNewNode;
-
-				break;
-			}
-		}
-
-		pCurrNode = pTestNode;
-	}
-
-	return true;
-}
-*/
-
 void _LinkedGrid::Remove(_GridNode *pNode)
 {
 	_GridNode *pAbove = pNode->pNeighbors[EGD_UP];
@@ -130,7 +73,7 @@ void _LinkedGrid::Remove(_GridNode *pNode)
 	{
 		// Find column head
 		_GridNode *pHead = pBelow;
-		while(!(pHead->flags & _GridNode::EGF_HEAD))
+		while(!pHead->IsHead())
 		{
 			pHead = pHead->pNeighbors[EGD_DOWN];
 		}
@@ -163,8 +106,8 @@ void _LinkedGrid::Remove(_GridNode *pNode)
 void _LinkedGrid::InsertColumnHead(_GridNode *pNewHead, _GridNode *pLeftHead)
 {
 	// Ensure heads are actually dummy nodes
-	assert(pNewHead->flags & _GridNode::EGF_HEAD);
-	assert(pLeftHead->flags & _GridNode::EGF_HEAD);
+	assert(pNewHead->IsHead());
+	assert(pLeftHead->IsHead());
 
 	// Insert node to the right
 	_GridNode *pPrevRight = pLeftHead->pNeighbors[EGD_RIGHT];
@@ -178,7 +121,7 @@ void _LinkedGrid::InsertColumnHead(_GridNode *pNewHead, _GridNode *pLeftHead)
 void _LinkedGrid::RemoveColumnHead(_GridNode *pHead)
 {
 	// Ensure pHead points to an empty node in the dummy list
-	assert(pHead->flags & _GridNode::EGF_HEAD);
+	assert(pHead->IsHead());
 	assert(pHead->pNeighbors[EGD_UP] == pHead && pHead->pNeighbors[EGD_DOWN] == pHead);
 
 	_GridNode *pLeft = pHead->pNeighbors[EGD_LEFT], *pRight = pHead->pNeighbors[EGD_RIGHT];
@@ -188,7 +131,7 @@ void _LinkedGrid::RemoveColumnHead(_GridNode *pHead)
 
 void _LinkedGrid::PushTop(_GridNode *pNode, _GridNode *pColumnHead)
 {
-	assert(pColumnHead->flags & _GridNode::EGF_HEAD);
+	assert(pColumnHead->IsHead());
 
 	// Insert below pColumnHead
 	_GridNode *pLowerNeighbor = pColumnHead->pNeighbors[EGD_DOWN];

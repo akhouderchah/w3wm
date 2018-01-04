@@ -16,6 +16,10 @@ public:
 	void OpenConsole();
 	void LockScreen();
 
+	inline UINT GetShellMsgID() const{ return m_ShellMsgID; }
+
+	static bool IsRelevantWindow(HWND hwnd);
+
 private:
 	bool Start();
 	bool UpdateHotkeys(PTCHAR iniDir);
@@ -24,6 +28,8 @@ private:
 	HWND m_Hwnd;
 	HMODULE m_HUserDLL;
 	MonitorGrid m_Monitors;
+
+	UINT m_ShellMsgID;
 
 	bool m_IsInitialized;
 

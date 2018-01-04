@@ -8,6 +8,7 @@
 
 extern LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 BOOL CALLBACK MonitorProc(HMONITOR hMonitor, HDC hdcMonitor, LPRECT lprcMonitor, LPARAM dwData);
+BOOL CALLBACK EnumWindowProc_Register(HWND hwnd, LPARAM lParam);
 
 std::vector<MonitorInfo> g_SecondaryMonitors;
 MonitorInfo g_PrimaryMonitor;
@@ -15,6 +16,7 @@ bool g_IsPrimarySet = false;
 
 w3Context::w3Context() :
 	m_HUserDLL(NULL),
+	m_ShellMsgID(0),
 	m_IsInitialized(false)
 {}
 
@@ -54,6 +56,22 @@ bool w3Context::Initialize(HINSTANCE hInstance)
 		return false;
 	}
 
+	BOOL (__stdcall *RegisterShellHookWindowFunc)(HWND) =
+		(BOOL (__stdcall *)(HWND))GetProcAddress(m_HUserDLL, "RegisterShellHookWindow");
+	if(!RegisterShellHookWindowFunc)
+	{
+		MessageBoxEx(NULL, _T("w3wm failed to get RegisterShellHookWindow"), _T("Error"), MB_OK | MB_ICONERROR, 0);
+		return false;
+	}
+
+	RegisterShellHookWindowFunc(m_Hwnd);
+	m_ShellMsgID = RegisterWindowMessage(_T("SHELLHOOK"));
+	if(!m_ShellMsgID)
+	{
+		MessageBoxEx(NULL, _T("w3wm failed to get the shell hook message ID"), _T("Error"), MB_OK | MB_ICONERROR, 0);
+		return false;
+	}
+
 	InstallHooks(m_Hwnd);
 
 	return Start();
@@ -85,6 +103,18 @@ void w3Context::OpenConsole()
 
 bool w3Context::Start()
 {
+	// Load settings from ini
+	TCHAR iniDir[512];
+	GetCurrentDirectory(512, iniDir);
+	_tcscat_s(iniDir, 100, _T("\\config.ini"));
+
+	if(UpdateHotkeys(iniDir))
+	{
+		// Get cmd path from ini
+		GetPrivateProfileString(_T("Applications"), _T("Cmd"), _T("C:\\Windows\\System32\\cmd.exe"), m_CmdPath, 512, iniDir);
+	}
+
+	// Get monitors
 	if(!EnumDisplayMonitors(NULL, NULL, MonitorProc, 0))
 	{
 		MessageBoxEx(NULL, _T("Failed to enumerate monitors!"), _T("Error"), MB_OK | MB_ICONERROR, 0);
@@ -104,15 +134,8 @@ bool w3Context::Start()
 	}
 	g_SecondaryMonitors.clear();
 
-	TCHAR iniDir[512];
-	GetCurrentDirectory(512, iniDir);
-	_tcscat_s(iniDir, 100, _T("\\config.ini"));
-
-	if(UpdateHotkeys(iniDir))
-	{
-		// Get cmd exe from ini
-		GetPrivateProfileString(_T("Applications"), _T("Cmd"), _T("C:\\Windows\\System32\\cmd.exe"), m_CmdPath, 512, iniDir);
-	}
+	// Get windows
+	EnumWindows(EnumWindowProc_Register, 0);
 
 	return true;
 }
@@ -159,6 +182,26 @@ BOOL CALLBACK MonitorProc(HMONITOR hMonitor, HDC hdcMonitor, LPRECT lprcMonitor,
 	else
 	{
 		g_SecondaryMonitors.push_back({hdcMonitor, *lprcMonitor});
+	}
+
+	return TRUE;
+}
+
+bool w3Context::IsRelevantWindow(HWND hwnd)
+{
+	if(IsWindowVisible(hwnd))
+	{
+		return true;
+	}
+
+	return false;
+}
+
+BOOL CALLBACK EnumWindowProc_Register(HWND hwnd, LPARAM lParam)
+{
+	if(w3Context::IsRelevantWindow(hwnd))
+	{
+		ShowWindow(hwnd, SW_RESTORE);
 	}
 
 	return TRUE;

@@ -21,7 +21,7 @@ bool MonitorGrid::Insert(MonitorInfo &info)
 	// Insert new column with node at appropriate location
 	_GridNode *pPrev = &m_PrimaryDummy;
 	_GridNode *pCurr = m_PrimaryDummy.pNeighbors[EGD_RIGHT];
-	while(!(pCurr->flags & _GridNode::EGF_PRIMARY) &&
+	while(!pCurr->IsPrimary() &&
 		((GridNode<MonitorInfo>*)pCurr)->data.screenBounds.left < info.screenBounds.left)
 	{
 		pPrev = pCurr;
@@ -50,7 +50,7 @@ const MonitorInfo &MonitorGrid::Move(EGridDirection direction)
 	do
 	{
 		m_pCurrentNode = (GridNode<MonitorInfo>*)m_pCurrentNode->pNeighbors[direction];
-	} while (m_pCurrentNode->flags & _GridNode::EGF_HEAD);
+	} while(m_pCurrentNode->IsHead());
 
 	return GetCurrentMonitor();
 }
