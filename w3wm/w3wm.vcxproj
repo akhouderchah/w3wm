@@ -129,7 +129,7 @@
     <ClCompile Include="main.cpp" />
     <ClCompile Include="w3_Context.cpp" />
     <ClCompile Include="w3_Hotkey.cpp" />
-    <ClCompile Include="w3_Grid.cpp" />
+    <ClCompile Include="w3_LinkedGrid.cpp" />
     <ClCompile Include="w3_Monitor.cpp" />
     <ClCompile Include="w3_Window.cpp" />
   </ItemGroup>
@@ -138,8 +138,13 @@
     <ClInclude Include="w3_Core.h" />
     <ClInclude Include="w3_Grid.h" />
     <ClInclude Include="w3_Hotkey.h" />
+    <ClInclude Include="w3_LinkedGrid.h" />
     <ClInclude Include="w3_Monitor.h" />
+    <ClInclude Include="w3_VectorGrid.h" />
     <ClInclude Include="w3_Window.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="w3_VectorGrid.inl" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -24,13 +24,13 @@
     <ClCompile Include="w3_Context.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="w3_Grid.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="w3_Monitor.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="w3_Window.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="w3_LinkedGrid.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -53,5 +53,16 @@
     <ClInclude Include="w3_Window.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="w3_LinkedGrid.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="w3_VectorGrid.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="w3_VectorGrid.inl">
+      <Filter>Source Files</Filter>
+    </None>
   </ItemGroup>
 </Project>
