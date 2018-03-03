@@ -1,68 +1,77 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <Filter Include="Source Files">
-      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
-      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
-    </Filter>
-    <Filter Include="Header Files">
-      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
-      <Extensions>h;hh;hpp;hxx;hm;inl;inc;xsd</Extensions>
-    </Filter>
     <Filter Include="Resource Files">
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="common">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;hm;inl;inc;xsd</Extensions>
+    </Filter>
+    <Filter Include="common\Source Files">
+      <UniqueIdentifier>{ca701591-20d6-4e5b-af18-69e6f3fe8ac4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="common\Header Files">
+      <UniqueIdentifier>{a8709252-7a30-4c35-8c16-3943ca219741}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="core">
+      <UniqueIdentifier>{a38684fe-82d5-4c77-a789-25f73f93abf5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="core\Source Files">
+      <UniqueIdentifier>{f2d5c2eb-96c0-46d4-93a6-480cde221df4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="core\Header Files">
+      <UniqueIdentifier>{3ff837ed-f0c4-4261-8428-00739adb79bc}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="main.cpp">
-      <Filter>Source Files</Filter>
+    <ClCompile Include="main.cpp" />
+    <ClCompile Include="core\w3_Context.cpp">
+      <Filter>core\Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="w3_Hotkey.cpp">
-      <Filter>Source Files</Filter>
+    <ClCompile Include="core\w3_Hotkey.cpp">
+      <Filter>core\Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="w3_Context.cpp">
-      <Filter>Source Files</Filter>
+    <ClCompile Include="core\w3_Monitor.cpp">
+      <Filter>core\Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="w3_Monitor.cpp">
-      <Filter>Source Files</Filter>
+    <ClCompile Include="core\w3_Window.cpp">
+      <Filter>core\Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="w3_Window.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="w3_LinkedGrid.cpp">
-      <Filter>Source Files</Filter>
+    <ClCompile Include="common\w3_LinkedGrid.cpp">
+      <Filter>common\Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="w3_Hotkey.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="core\w3_Context.h">
+      <Filter>core\Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="w3_Context.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="core\w3_Hotkey.h">
+      <Filter>core\Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="w3_Core.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="core\w3_Monitor.h">
+      <Filter>core\Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="w3_Monitor.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="core\w3_Window.h">
+      <Filter>core\Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="w3_Grid.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="common\w3_Core.h">
+      <Filter>common\Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="w3_Window.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="common\w3_Grid.h">
+      <Filter>common\Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="w3_LinkedGrid.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="common\w3_LinkedGrid.h">
+      <Filter>common\Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="w3_VectorGrid.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="common\w3_VectorGrid.h">
+      <Filter>common\Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <None Include="w3_VectorGrid.inl">
-      <Filter>Source Files</Filter>
+    <None Include="common\w3_VectorGrid.inl">
+      <Filter>common\Source Files</Filter>
     </None>
   </ItemGroup>
 </Project>

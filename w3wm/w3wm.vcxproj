@@ -65,13 +65,28 @@
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
-  <PropertyGroup />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <OutDir>$(SolutionDir)bin\$(Platform)_$(Configuration)\</OutDir>
+    <IntDir>$(SolutionDir)temp\$(ProjectName)-$(Platform)_$(Configuration)\</IntDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <OutDir>$(SolutionDir)bin\$(Platform)_$(Configuration)\</OutDir>
+    <IntDir>$(SolutionDir)temp\$(ProjectName)-$(Platform)_$(Configuration)\</IntDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <OutDir>$(SolutionDir)bin\$(Platform)_$(Configuration)\</OutDir>
+    <IntDir>$(SolutionDir)temp\$(ProjectName)-$(Platform)_$(Configuration)\</IntDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <OutDir>$(SolutionDir)bin\$(Platform)_$(Configuration)\</OutDir>
+    <IntDir>$(SolutionDir)temp\$(ProjectName)-$(Platform)_$(Configuration)\</IntDir>
+  </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>E:\Code\C++\w3wm\w3_DLL;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)w3_DLL;$(ProjectDir)core;$(ProjectDir)common;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -84,7 +99,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>E:\Code\C++\w3wm\w3_DLL;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)w3_DLL;$(ProjectDir)core;$(ProjectDir)common;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -99,6 +114,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
+      <AdditionalIncludeDirectories>$(SolutionDir)w3_DLL;$(ProjectDir)core;$(ProjectDir)common;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -113,6 +129,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
+      <AdditionalIncludeDirectories>$(SolutionDir)w3_DLL;$(ProjectDir)core;$(ProjectDir)common;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -126,25 +143,25 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="common\w3_LinkedGrid.cpp" />
+    <ClCompile Include="core\w3_Context.cpp" />
+    <ClCompile Include="core\w3_Hotkey.cpp" />
+    <ClCompile Include="core\w3_Monitor.cpp" />
+    <ClCompile Include="core\w3_Window.cpp" />
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="w3_Context.cpp" />
-    <ClCompile Include="w3_Hotkey.cpp" />
-    <ClCompile Include="w3_LinkedGrid.cpp" />
-    <ClCompile Include="w3_Monitor.cpp" />
-    <ClCompile Include="w3_Window.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="w3_Context.h" />
-    <ClInclude Include="w3_Core.h" />
-    <ClInclude Include="w3_Grid.h" />
-    <ClInclude Include="w3_Hotkey.h" />
-    <ClInclude Include="w3_LinkedGrid.h" />
-    <ClInclude Include="w3_Monitor.h" />
-    <ClInclude Include="w3_VectorGrid.h" />
-    <ClInclude Include="w3_Window.h" />
+    <ClInclude Include="common\w3_Core.h" />
+    <ClInclude Include="common\w3_Grid.h" />
+    <ClInclude Include="common\w3_LinkedGrid.h" />
+    <ClInclude Include="common\w3_VectorGrid.h" />
+    <ClInclude Include="core\w3_Context.h" />
+    <ClInclude Include="core\w3_Hotkey.h" />
+    <ClInclude Include="core\w3_Monitor.h" />
+    <ClInclude Include="core\w3_Window.h" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="w3_VectorGrid.inl" />
+    <None Include="common\w3_VectorGrid.inl" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
