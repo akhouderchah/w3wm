@@ -3,35 +3,19 @@
 template<typename NodeType, typename HeadType>
 void VectorGrid<NodeType, HeadType>::Clear()
 {
+	m_Columns.clear();
 }
 
-template<typename NodeType, typename HeadType>
-bool VectorGrid<NodeType, HeadType>::InsertColumn(size_t pos, HeadType &&head)
+template<typename NodeType, typename HeadType> template<typename... Ts>
+bool VectorGrid<NodeType, HeadType>::InsertColumn(size_t pos, Ts&&... ts)
 {
-	assert(col <= m_Columns.size());
+	assert(pos <= m_Columns.size());
 
 	try
 	{
-		m_Columns.insert(m_Columns.cbegin() + pos, std::move(head));
+		m_Columns.emplace(m_Columns.cbegin() + pos, std::forward<Ts>(ts)...);
 	}
-	catch(std::bad_alloc &ba)
-	{
-		return false;
-	}
-
-	return true;
-}
-
-template<typename NodeType, typename HeadType>
-bool VectorGrid<NodeType, HeadType>::InsertColumn(size_t pos, const HeadType &head)
-{
-	assert(col <= m_Columns.size());
-
-	try
-	{
-		m_Columns.insert(m_Columns.cbegin() + pos, head);
-	}
-	catch(std::bad_alloc &ba)
+	catch(std::bad_alloc &)
 	{
 		return false;
 	}
@@ -42,7 +26,7 @@ bool VectorGrid<NodeType, HeadType>::InsertColumn(size_t pos, const HeadType &he
 template<typename NodeType, typename HeadType>
 void VectorGrid<NodeType, HeadType>::RemoveColumn(size_t pos)
 {
-	assert(col < m_Columns.size());
+	assert(pos < m_Columns.size());
 
 	m_Columns.erase(m_Columns.begin() + pos);
 }
@@ -58,7 +42,7 @@ bool VectorGrid<NodeType, HeadType>::InsertElement(size_t col, size_t row, NodeT
 	{
 		colElems.insert(colElems.cbegin() + row, std::move(elem));
 	}
-	catch(std::bad_alloc &ba)
+	catch(std::bad_alloc &)
 	{
 		return false;
 	}
@@ -77,7 +61,7 @@ bool VectorGrid<NodeType, HeadType>::InsertElement(size_t col, size_t row, const
 	{
 		colElems.insert(colElems.cbegin() + row, elem);
 	}
-	catch(std::bad_alloc &ba)
+	catch(std::bad_alloc &)
 	{
 		return false;
 	}

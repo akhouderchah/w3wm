@@ -32,10 +32,13 @@ public:
 	/**
 	 * @brief Insert a column before the column at position pos
 	 *
+	 * Perfect forwards the arguments after pos to the constructor of HeadType.
+	 * Therefore this method can be used even with custom HeadTypes.
+	 *
 	 * @return true if pos is valid an insertion is successful, else false
 	 */
-	bool InsertColumn(size_t pos, HeadType &&elem);
-	bool InsertColumn(size_t pos, const HeadType &elem);
+	template<typename... Ts>
+	bool InsertColumn(size_t pos, Ts&&... ts);
 
 	/**
 	 * @brief Remove column at position pos, if there exists one
@@ -66,8 +69,16 @@ public:
 	 */
 	void RemoveElement(size_t col, size_t row);
 
+	/**
+	 * @brief Return the nth column
+	 */
 	inline HeadType &operator[](size_t n){ return m_Columns[n]; }
 	inline const HeadType &operator[](size_t n) const{ return m_Columns[n]; }
+
+	/**
+	 * @brief Return the number of columns in the grid
+	 */
+	inline size_t ColumnCount() const{ return m_Columns.size(); }
 
 protected:
 	std::vector<HeadType> m_Columns;
