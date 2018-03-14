@@ -38,21 +38,21 @@ bool w3Context::Initialize(HINSTANCE hInstance)
 
 	if(!RegisterClassEx(&wc))
 	{
-		MessageBoxEx(NULL, _T("w3wm failed to register the window class"), _T("Error"), MB_OK | MB_ICONERROR, 0);
+		MessageBoxEx(NULL, _T("w3wm failed to register the window class"), T_ERROR_TITLE, MB_OK | MB_ICONERROR, 0);
 		return false;
 	}
 
 	m_Hwnd = CreateWindowEx(0, T_WNDCLASS_NAME, T_APP_NAME, 0, 0, 0, 0, 0, HWND_MESSAGE, NULL, hInstance, NULL);
 	if(!m_Hwnd)
 	{
-		MessageBoxEx(NULL, _T("w3wm failed to create the window"), _T("Error"), MB_OK | MB_ICONERROR, 0);
+		MessageBoxEx(NULL, _T("w3wm failed to create the window"), T_ERROR_TITLE, MB_OK | MB_ICONERROR, 0);
 		return false;
 	}
 
 	m_HUserDLL = GetModuleHandle(_T("USER32.DLL"));
 	if(!m_HUserDLL)
 	{
-		MessageBoxEx(NULL, _T("w3wm failed to get USER32.DLL"), _T("Error"), MB_OK | MB_ICONERROR, 0);
+		MessageBoxEx(NULL, _T("w3wm failed to get USER32.DLL"), T_ERROR_TITLE, MB_OK | MB_ICONERROR, 0);
 		return false;
 	}
 
@@ -60,7 +60,7 @@ bool w3Context::Initialize(HINSTANCE hInstance)
 		(BOOL (__stdcall *)(HWND))GetProcAddress(m_HUserDLL, "RegisterShellHookWindow");
 	if(!RegisterShellHookWindowFunc)
 	{
-		MessageBoxEx(NULL, _T("w3wm failed to get RegisterShellHookWindow"), _T("Error"), MB_OK | MB_ICONERROR, 0);
+		MessageBoxEx(NULL, _T("w3wm failed to get RegisterShellHookWindow"), T_ERROR_TITLE, MB_OK | MB_ICONERROR, 0);
 		return false;
 	}
 
@@ -68,7 +68,7 @@ bool w3Context::Initialize(HINSTANCE hInstance)
 	m_ShellMsgID = RegisterWindowMessage(_T("SHELLHOOK"));
 	if(!m_ShellMsgID)
 	{
-		MessageBoxEx(NULL, _T("w3wm failed to get the shell hook message ID"), _T("Error"), MB_OK | MB_ICONERROR, 0);
+		MessageBoxEx(NULL, _T("w3wm failed to get the shell hook message ID"), T_ERROR_TITLE, MB_OK | MB_ICONERROR, 0);
 		return false;
 	}
 
@@ -117,20 +117,21 @@ bool w3Context::Start()
 	// Get monitors
 	if(!EnumDisplayMonitors(NULL, NULL, MonitorProc, 0))
 	{
-		MessageBoxEx(NULL, _T("Failed to enumerate monitors!"), _T("Error"), MB_OK | MB_ICONERROR, 0);
+		MessageBoxEx(NULL, _T("Failed to enumerate monitors!"), T_ERROR_TITLE, MB_OK | MB_ICONERROR, 0);
 		return false;
 	}
 
 	// Add monitors to m_Monitors if we found the primary monitor
 	if(!g_IsPrimarySet)
 	{
+		MessageBoxEx(NULL, _T("Failed to find a primary monitor!"), T_ERROR_TITLE, MB_OK | MB_ICONERROR, 0);
 		return false;
 	}
 
-	m_Monitors.Insert(g_PrimaryMonitor);
+	m_Monitors.Insert(std::move(g_PrimaryMonitor));
 	for(MonitorInfo &info : g_SecondaryMonitors)
 	{
-		m_Monitors.Insert(info);
+		m_Monitors.Insert(std::move(info));
 	}
 	g_SecondaryMonitors.clear();
 

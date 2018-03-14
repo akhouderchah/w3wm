@@ -6,7 +6,7 @@ MonitorGrid::MonitorGrid() :
 	m_pCurrentNode(nullptr)
 {}
 
-bool MonitorGrid::Insert(MonitorInfo &info)
+bool MonitorGrid::Insert(MonitorInfo &&info)
 {
 	// NOTE: This entire function is a test implementation. It may be rewritten from scratch
 	// in the future.

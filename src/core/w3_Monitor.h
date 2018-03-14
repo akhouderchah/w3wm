@@ -15,7 +15,7 @@ public:
 	MonitorGrid();
 	~MonitorGrid(){ Clear(); }
 
-	bool Insert(MonitorInfo &info);
+	bool Insert(MonitorInfo &&info);
 
 	const MonitorInfo &GetCurrentMonitor() const;
 	const MonitorInfo &Move(EGridDirection direction);
