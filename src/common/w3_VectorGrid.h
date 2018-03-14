@@ -1,14 +1,15 @@
 #pragma once
 
 #include <vector>
+#include "w3_Core.h"
 
 template<typename T>
 struct GridHead
 {
 	std::vector<T> m_Elems;
 
-	inline T& operator[](size_t n){ return m_Elems[n]; }
-	inline const T& operator[](size_t n) const{ return m_Elems[n]; }
+	inline T &operator[](size_t n){ return m_Elems[n]; }
+	inline const T &operator[](size_t n) const{ return m_Elems[n]; }
 };
 
 /**
@@ -24,6 +25,14 @@ template<typename NodeType, typename HeadType = GridHead<NodeType>>
 class VectorGrid
 {
 public:
+	VectorGrid() : m_ColumnIndex(0), m_RowIndex(0) {}
+
+	VectorGrid(const VectorGrid &other) = default;
+	VectorGrid(VectorGrid &&other);
+
+	VectorGrid &operator=(const VectorGrid &other) = default;
+	VectorGrid &operator=(VectorGrid &&other);
+
 	/**
 	 * @brief Removes all nodes and columns from the grid
 	 */
@@ -76,12 +85,44 @@ public:
 	inline const HeadType &operator[](size_t n) const{ return m_Columns[n]; }
 
 	/**
+	 * @brief Return current element, if it exists
+	 */
+	NodeType *GetCurrent(){ return _GetCurrent(); }
+	inline const NodeType *GetCurrent() const{ return _GetCurrent(); }
+
+	/**
+	 * @brief Move in a particular direction
+	 *
+	 * @return True if the current position actually changed
+	 */
+	bool Move(EGridDirection direction, bool bWrapAround=true);
+
+	/**
 	 * @brief Return the number of columns in the grid
 	 */
 	inline size_t ColumnCount() const{ return m_Columns.size(); }
 
 protected:
+	/**
+	 * @brief Get row index of adjacent column
+	 *
+	 * This method can be overridden by child classes to change the behavior of
+	 * Move(). In particular, child classes can use this method as a chance to store
+	 * information about the current row index in the head/data nodes.
+	 *
+	 * @note Neither m_RowIndex nor m_ColumnIndex have been modified by Move() yet
+	 *       when this is called.
+	 */
+	virtual size_t AdjacentRowIndex(EGridDirection dir, size_t newColumnIndex);
+
+private:
+	NodeType *_GetCurrent() const;
+
+protected:
 	std::vector<HeadType> m_Columns;
+
+	size_t m_ColumnIndex;
+	size_t m_RowIndex;
 };
 
 #include "w3_VectorGrid.inl"

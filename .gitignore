@@ -1,4 +1,15 @@
-*.opensdf
 bin/
 temp/
 lib/
+
+# VS files
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+*.aps
+*.ncb
+*.opendb
+*.opensdf
+*.sdf
+*.cachefile

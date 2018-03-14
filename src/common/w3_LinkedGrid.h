@@ -1,15 +1,7 @@
 #pragma once
 
 #include <windows.h>
-
-enum EGridDirection
-{
-	EGD_UP,
-	EGD_RIGHT,
-	EGD_DOWN,
-	EGD_LEFT,
-	EGD_COUNT
-};
+#include "w3_Core.h"
 
 /**
  * @brief Base struct for templated GridNodes
