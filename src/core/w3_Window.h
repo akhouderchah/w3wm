@@ -8,11 +8,12 @@
  * Much of the window tiling functionality is contained in this class.
  *
  * @note This class will usually not be used directly, but will instead be
- *       be used by MonitorGrid.
+ *       be used by MonitorGrid or WindowManager.
  */
 class WindowGrid
 {
 public:
+	WindowGrid(LPRECT pMonitorRect, float dpiScaling=1.f);
 	~WindowGrid(){ Clear(); }
 
 	/**
@@ -33,50 +34,22 @@ private:
 	struct Node
 	{
 		HWND m_Hwnd;
-		LONG m_TopBound;
-		LONG m_BottomBound;
+		UINT32 m_HeightWeight;
 	};
 
 	struct Column : GridHead<Node>
 	{
-		Column(LONG leftBound, LONG rightBound) : m_LeftBound(leftBound), m_RightBound(rightBound){}
-		LONG m_LeftBound;
-		LONG m_RightBound;
+		Column(UINT32 widthWeight) : m_WidthWeight(widthWeight),
+									 m_TotalHeightWeight(0){}
+		UINT32 m_WidthWeight;
+		UINT32 m_TotalHeightWeight;
 	};
 
 	VectorGrid<Node, Column> m_Grid;
+
+	UINT32 m_DefaultWidthWeight;
+	UINT32 m_TotalWidthWeight;
+
+	RECT m_MonitorRect;
+	float m_DpiScaling;
 };
-
-/*
-class WindowGrid : public _LinkedGrid
-{
-public:
-	WindowGrid();
-	~WindowGrid(){ Clear(); }
-
-	bool Insert(HWND hwnd);
-	bool Remove(const WindowInfo &wndInfo);
-
-	void Apply();
-
-	void Clear();
-
-private:
-	struct ColumnInfo
-	{
-		LONG left;
-		LONG right;
-		UINT16 count;
-		UINT16 columnFlags;
-	};
-
-	struct NodeInfo
-	{
-		HWND hwnd;
-		LONG top;
-		LONG bottom;
-	};
-
-	_GridNode *m_pCurrentNode;
-};
-*/

@@ -55,9 +55,9 @@ template<typename NodeType, typename HeadType>
 bool VectorGrid<NodeType, HeadType>::InsertElement(size_t col, size_t row, NodeType &&elem)
 {
 	assert(col <= m_Columns.size());
-	assert(row <= m_Columns[col].m_Elems.size());
+	assert(row <= m_Columns[col].size());
 
-	auto& colElems = m_Columns[col].m_Elems;
+	auto& colElems = m_Columns[col];
 	try
 	{
 		colElems.insert(colElems.cbegin() + row, std::move(elem));
@@ -74,9 +74,9 @@ template<typename NodeType, typename HeadType>
 bool VectorGrid<NodeType, HeadType>::InsertElement(size_t col, size_t row, const NodeType &elem)
 {
 	assert(col <= m_Columns.size());
-	assert(row <= m_Columns[col].m_Elems.size());
+	assert(row <= m_Columns[col].size());
 
-	auto& colElems = m_Columns[col].m_Elems;
+	auto& colElems = m_Columns[col];
 	try
 	{
 		colElems.insert(colElems.cbegin() + row, elem);
@@ -93,9 +93,9 @@ template<typename NodeType, typename HeadType>
 void VectorGrid<NodeType, HeadType>::RemoveElement(size_t col, size_t row)
 {
 	assert(col < m_Columns.size());
-	assert(row < m_Columns[col].m_Elems.size());
+	assert(row < m_Columns[col].size());
 
-	auto &colElems = m_Columns[col].m_Elems;
+	auto &colElems = m_Columns[col];
 	colElems.erase(colElems.begin() + row);
 }
 
@@ -108,7 +108,7 @@ NodeType *VectorGrid<NodeType, HeadType>::_GetCurrent() const
 	}
 
 	auto& col = m_Columns[m_ColumnIndex];
-	if(m_RowIndex >= col.m_Elems.size())
+	if(m_RowIndex >= col.size())
 	{
 		return nullptr;
 	}
@@ -136,7 +136,7 @@ bool VectorGrid<NodeType, HeadType>::Move(EGridDirection direction, bool bWrapAr
 
 		auto& col = m_Columns[m_ColumnIndex];
 
-		size_t rowCount = col.m_Elems.size();
+		size_t rowCount = col.size();
 		if(rowCount <= newIndex)
 		{
 			if(bWrapAround && rowCount)
@@ -181,5 +181,5 @@ template<typename NodeType, typename HeadType>
 size_t VectorGrid<NodeType, HeadType>::AdjacentRowIndex(EGridDirection dir, size_t newColumnIndex)
 {
 	assert(newColumnIndex < ColumnCount());
-	return std::min(m_RowIndex, m_Columns[newColumnIndex].m_Elems.size()-1);
+	return std::min(m_RowIndex, m_Columns[newColumnIndex].size()-1);
 }

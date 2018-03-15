@@ -4,22 +4,21 @@
 #include "w3_Core.h"
 
 template<typename T>
-struct GridHead
+struct GridHead : std::vector<T>
 {
-	std::vector<T> m_Elems;
-
-	inline T &operator[](size_t n){ return m_Elems[n]; }
-	inline const T &operator[](size_t n) const{ return m_Elems[n]; }
+	GridHead() = default;
+	GridHead(const std::vector<T> &elems) : std::vector<T>(elems){}
+	GridHead(std::vector<T> &&elems) : std::vector<T>(std::move(elems)){}
 };
 
 /**
  * @brief Grid class represented as a vector of vectors
  *
  * More concretely, this class is a vector of HeadTypes. The HeadType
- * is required to have a vector-like class called m_Elems, and to offer
- * at least a const operator[] method. Any class/struct satisfying these
- * attributes may be used as a HeadType. In the usual case, this class
- * is essentially just a vector<vector<NodeType>>.
+ * is required to be a vector-like class which offers at least a const
+ * operator[] method. Any class/struct satisfying these attributes
+ * may be used as a HeadType. In the usual case, this class is
+ * essentially just a vector<vector<NodeType>>.
  */
 template<typename NodeType, typename HeadType = GridHead<NodeType>>
 class VectorGrid

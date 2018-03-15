@@ -3,6 +3,8 @@
 #include <windows.h>
 #include "w3_Monitor.h"
 
+#include <unordered_set>
+
 class w3Context
 {
 public:
@@ -18,11 +20,13 @@ public:
 
 	inline UINT GetShellMsgID() const{ return m_ShellMsgID; }
 
-	static bool IsRelevantWindow(HWND hwnd);
+	bool IsRelevantWindow(HWND hwnd);
 
 private:
 	bool Start();
 	bool UpdateHotkeys(PTCHAR iniDir);
+
+	void SetupBlacklist();
 
 private:
 	HWND m_Hwnd;
@@ -34,4 +38,7 @@ private:
 	bool m_IsInitialized;
 
 	TCHAR m_CmdPath[256];
+
+	std::unordered_set<std::basic_string<TCHAR>> m_ClassBlacklist;
+	std::unordered_set<int> m_PrefixLengths;
 };

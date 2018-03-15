@@ -67,10 +67,10 @@ TEST(VectorGridTest, MoveCurrent)
 	VectorGrid<int> grid;
 
 	GridHead<int> col;
-	col.m_Elems = std::vector<int>{0, 1, 2, 3, 4, 5};
+	col = std::vector<int>{0, 1, 2, 3, 4, 5};
 	grid.InsertColumn(0, std::move(col));
 
-	col.m_Elems = std::vector<int>{10, 11, 12};
+	col = std::vector<int>{10, 11, 12};
 	grid.InsertColumn(1, std::move(col));
 
 	EXPECT_EQ(0, *grid.GetCurrent());

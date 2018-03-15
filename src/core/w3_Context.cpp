@@ -2,6 +2,9 @@
 #include "w3_Core.h"
 #include "w3_DLL.h"
 
+// TODO REMOVE
+#include "w3_Window.h"
+
 #include <windows.h>
 #include "Shlwapi.h"
 #include <vector>
@@ -13,6 +16,16 @@ BOOL CALLBACK EnumWindowProc_Register(HWND hwnd, LPARAM lParam);
 std::vector<MonitorInfo> g_SecondaryMonitors;
 MonitorInfo g_PrimaryMonitor;
 bool g_IsPrimarySet = false;
+
+// TODO REMOVE
+WindowGrid *pGridTest;
+
+#define ADD_BLACKLIST(str) \
+	m_ClassBlacklist.insert(str)
+
+#define ADD_BLACKLIST_PREFIX(str) \
+	m_ClassBlacklist.insert(str); \
+	m_PrefixLengths.insert((sizeof(str)-sizeof(TCHAR))/sizeof(TCHAR))
 
 w3Context::w3Context() :
 	m_HUserDLL(NULL),
@@ -86,6 +99,7 @@ bool w3Context::Restart()
 {
 	// Clear state that will be replaced after calling Start()
 	m_Monitors.Clear();
+	m_ClassBlacklist.clear();
 	g_IsPrimarySet = false;
 
 	return Start();
@@ -114,10 +128,20 @@ bool w3Context::Start()
 		GetPrivateProfileString(_T("Applications"), _T("Cmd"), _T("C:\\Windows\\System32\\cmd.exe"), m_CmdPath, 512, iniDir);
 	}
 
+	// Set up window exclusion by class name
+	SetupBlacklist();
+
+	// Get monitor scaling (GetScaleFactorForMonitor is only available in Windows 8+)
+	// This scaling factor will only be necessary for applications that are not DPI aware
+	HWND wnd = 0;
+	HDC hDC = GetDC(wnd);
+	float scale = float(GetDeviceCaps(hDC, DESKTOPHORZRES)) / GetDeviceCaps(hDC, HORZRES);
+	ReleaseDC(wnd, hDC);
+
 	// Get monitors
-	if(!EnumDisplayMonitors(NULL, NULL, MonitorProc, 0))
+	if(!EnumDisplayMonitors(NULL, NULL, MonitorProc, (LPARAM)&scale))
 	{
-		MessageBoxEx(NULL, _T("Failed to enumerate monitors!"), T_ERROR_TITLE, MB_OK | MB_ICONERROR, 0);
+		MessageBoxEx(NULL, _T("Failed to enumerate monitors!"), T_ERROR_TITLE, MB_OK | MB_ICONERROR, NULL);
 		return false;
 	}
 
@@ -136,7 +160,9 @@ bool w3Context::Start()
 	g_SecondaryMonitors.clear();
 
 	// Get windows
-	EnumWindows(EnumWindowProc_Register, 0);
+	EnumWindows(EnumWindowProc_Register, (LPARAM)this);
+
+	pGridTest->Apply();
 
 	return true;
 }
@@ -173,11 +199,25 @@ bool w3Context::UpdateHotkeys(PTCHAR iniDir)
 	return (max != 0);
 }
 
+void w3Context::SetupBlacklist()
+{
+	ADD_BLACKLIST(_T("Shell_TrayWnd"));
+	ADD_BLACKLIST(_T("Progman"));
+	ADD_BLACKLIST(_T("WorkerW"));
+	ADD_BLACKLIST(_T("#32770"));					// Annoying Win10 upgrade prompt
+
+	ADD_BLACKLIST(_T("FencesCustomScrollbar"));
+	ADD_BLACKLIST(_T("VisualStudioGlowWindow"));
+
+	ADD_BLACKLIST_PREFIX(_T("TaskbarWindow"));
+}
+
 BOOL CALLBACK MonitorProc(HMONITOR hMonitor, HDC hdcMonitor, LPRECT lprcMonitor, LPARAM dwData)
 {
 	if(lprcMonitor->left == 0 && lprcMonitor->top == 0)
 	{
 		g_PrimaryMonitor = {hdcMonitor, *lprcMonitor};
+		pGridTest = new WindowGrid(lprcMonitor, *(float*)dwData);
 		g_IsPrimarySet = true;
 	}
 	else
@@ -190,8 +230,38 @@ BOOL CALLBACK MonitorProc(HMONITOR hMonitor, HDC hdcMonitor, LPRECT lprcMonitor,
 
 bool w3Context::IsRelevantWindow(HWND hwnd)
 {
-	if(IsWindowVisible(hwnd))
+	if(IsWindowVisible(hwnd) && GetParent(hwnd) == 0)
 	{
+		TCHAR className[256];
+		int len = GetClassName(hwnd, className, 256);
+
+		// Check to see if full name is in blacklist
+		if(m_ClassBlacklist.find(className) != m_ClassBlacklist.end())
+		{
+			return false;
+		}
+
+		// See if relevant prefixes are in blacklist
+		for(auto prefixLen : m_PrefixLengths)
+		{
+			if(len <= prefixLen) continue;
+
+			TCHAR prev = className[prefixLen];
+			className[prefixLen] = 0;
+
+			if(m_ClassBlacklist.find(className) != m_ClassBlacklist.end())
+			{
+				return false;
+			}
+
+			className[prefixLen] = prev;
+		}
+
+		RECT r;
+		GetWindowRect(hwnd, &r);
+		DEBUG_MESSAGE(_T("WindowPos"), _T("%s: (%d, %d) -> (%d, %d)"), className,
+			r.left, r.top, r.right, r.bottom);
+
 		return true;
 	}
 
@@ -200,9 +270,9 @@ bool w3Context::IsRelevantWindow(HWND hwnd)
 
 BOOL CALLBACK EnumWindowProc_Register(HWND hwnd, LPARAM lParam)
 {
-	if(w3Context::IsRelevantWindow(hwnd))
+	if(((w3Context*)lParam)->IsRelevantWindow(hwnd))
 	{
-		ShowWindow(hwnd, SW_RESTORE);
+		pGridTest->Insert(hwnd);
 	}
 
 	return TRUE;
