@@ -27,9 +27,22 @@ public:
 	void Apply();
 
 	/**
+	 * @brief Sets focus to the window in the specified direction
+	 *
+	 * @return True if the current position actually changed
+	 */
+	bool MoveFocus(EGridDirection direction, bool bWrapAround=true);
+
+	/**
 	 * @brief Untrack all windows
 	 */
 	void Clear();
+private:
+	/**
+	 * @brief Set focus to the specified window
+	 */
+	bool FocusWindow(HWND hwnd);
+
 private:
 	struct Node
 	{

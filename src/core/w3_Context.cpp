@@ -87,11 +87,16 @@ bool w3Context::Initialize(HINSTANCE hInstance)
 
 	InstallHooks(m_Hwnd);
 
+	SetThreadExecutionState(ES_CONTINUOUS | ES_DISPLAY_REQUIRED | ES_SYSTEM_REQUIRED);
+
 	return Start();
 }
 
 void w3Context::Shutdown()
 {
+	// Un-clip cursor
+	ClipCursor(0);
+
 	RemoveHooks();
 }
 
@@ -113,6 +118,11 @@ void w3Context::LockScreen()
 void w3Context::OpenConsole()
 {
 	WinExec(m_CmdPath, SW_RESTORE);
+}
+
+bool w3Context::MoveFocus(EGridDirection direction, bool bWrapAround)
+{
+	return pGridTest->MoveFocus(direction, bWrapAround);
 }
 
 bool w3Context::Start()

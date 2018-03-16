@@ -27,6 +27,9 @@ bool WindowGrid::Insert(HWND hwnd)
 	m_Grid.InsertElement(m_Grid.ColumnCount()-1, 0, {hwnd, 1});
 	m_Grid[m_Grid.ColumnCount()-1].m_TotalHeightWeight = 1;
 
+	// Set focus to inserted window
+	SetFocus(hwnd);
+
 	return true;
 }
 
@@ -80,8 +83,41 @@ void WindowGrid::Apply()
 	}
 }
 
+bool WindowGrid::MoveFocus(EGridDirection direction, bool bWrapAround)
+{
+	bool bChanged = m_Grid.Move(direction, bWrapAround);
+	if(bChanged)
+	{
+		Node *pNode = m_Grid.GetCurrent();
+		return pNode && FocusWindow(pNode->m_Hwnd);
+	}
+
+	return bChanged;
+}
+
 void WindowGrid::Clear()
 {
 	m_Grid.Clear();
 	m_TotalWidthWeight = 0;
+}
+
+bool WindowGrid::FocusWindow(HWND hwnd)
+{
+	// Move cursor into window
+	RECT r;
+	GetWindowRect(hwnd, &r);
+	ClipCursor(&r);
+	SetCursorPos(r.left + (r.right-r.left)/2, r.top + (r.bottom-r.top)/2);
+
+	// Click cursor down
+	INPUT click = {0};
+	click.type = INPUT_MOUSE;
+	click.mi.dwFlags = MOUSEEVENTF_LEFTDOWN;
+	SendInput(1, &click, sizeof(INPUT));
+
+	// Click cursor up
+	click.mi.dwFlags = MOUSEEVENTF_LEFTUP;
+	SendInput(1, &click, sizeof(INPUT));
+
+	return true;
 }

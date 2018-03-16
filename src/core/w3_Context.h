@@ -15,8 +15,10 @@ public:
 
 	bool Restart();
 
-	void OpenConsole();
 	void LockScreen();
+	void OpenConsole();
+
+	bool MoveFocus(EGridDirection, bool bWrapAround=true);
 
 	inline UINT GetShellMsgID() const{ return m_ShellMsgID; }
 

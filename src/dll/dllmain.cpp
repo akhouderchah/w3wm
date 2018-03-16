@@ -64,6 +64,16 @@ LRESULT CALLBACK LLKeyboardProc(int code, WPARAM wParam, LPARAM lParam)
 				if(pHotkey->m_MainKey == keyDown && pHotkey->m_Modifiers == mods)
 				{
 					SendMessage(hAppWnd, WM_HOTKEY, 99, pHotkey->m_HotkeyID);
+					/*
+					INPUT in;
+					in.type = INPUT_KEYBOARD;
+					in.ki.wScan = 0;
+					in.ki.time = 0;
+					in.ki.dwExtraInfo = 0;
+					in.ki.wVk = VK_LWIN;
+					in.ki.dwFlags = KEYEVENTF_KEYUP;
+					SendInput(1, &in, sizeof(INPUT));
+					*/
 					return 1;
 				}
 

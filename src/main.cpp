@@ -34,7 +34,11 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			{
 				case EH_WND_CLOSE:
 					break;
-				case EH_WND_MOVE_DOWN:
+				case EH_FOCUS_UP:
+				case EH_FOCUS_RIGHT:
+				case EH_FOCUS_DOWN:
+				case EH_FOCUS_LEFT:
+					g_Context.MoveFocus(EGridDirection(lParam-EH_FOCUS_UP));
 					break;
 				case EH_W3WM_CLOSE:
 					g_Context.Shutdown();
