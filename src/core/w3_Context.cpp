@@ -87,8 +87,6 @@ bool w3Context::Initialize(HINSTANCE hInstance)
 
 	InstallHooks(m_Hwnd);
 
-	SetThreadExecutionState(ES_CONTINUOUS | ES_DISPLAY_REQUIRED | ES_SYSTEM_REQUIRED);
-
 	return Start();
 }
 
@@ -97,6 +95,7 @@ void w3Context::Shutdown()
 	// Un-clip cursor
 	ClipCursor(0);
 
+	// Remove the injected DLL
 	RemoveHooks();
 }
 
@@ -112,6 +111,10 @@ bool w3Context::Restart()
 
 void w3Context::LockScreen()
 {
+	if(!SetWorkspaceLock(true))
+	{
+		DEBUG_MESSAGE(_T("Warning"), _T("Failed to enable workspace lock"));
+	}
 	LockWorkStation();
 }
 
@@ -122,6 +125,7 @@ void w3Context::OpenConsole()
 
 bool w3Context::MoveFocus(EGridDirection direction, bool bWrapAround)
 {
+	SetWorkspaceLock(false);
 	return pGridTest->MoveFocus(direction, bWrapAround);
 }
 
@@ -220,6 +224,23 @@ void w3Context::SetupBlacklist()
 	ADD_BLACKLIST(_T("VisualStudioGlowWindow"));
 
 	ADD_BLACKLIST_PREFIX(_T("TaskbarWindow"));
+}
+
+bool w3Context::SetWorkspaceLock(bool value)
+{
+	// Get registry key for DisableLockWorkstation
+	HKEY hKey;
+	RegOpenKeyEx(HKEY_CURRENT_USER, _T("Software\\Microsoft\\Windows\\CurrentVersion\\Policies\\System"), 0,
+		KEY_ALL_ACCESS, &hKey);
+
+	// Set DisableLockWorkstation value
+	DWORD d = !value;
+	LONG result = RegSetValueEx(hKey, _T("DisableLockWorkstation"), 0, REG_DWORD, (const BYTE*)&d, sizeof(DWORD));
+
+	// Release registry key for DisableLockWorkstation
+	RegCloseKey(hKey);
+
+	return (result == ERROR_SUCCESS);
 }
 
 BOOL CALLBACK MonitorProc(HMONITOR hMonitor, HDC hdcMonitor, LPRECT lprcMonitor, LPARAM dwData)

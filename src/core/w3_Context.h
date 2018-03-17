@@ -30,6 +30,8 @@ private:
 
 	void SetupBlacklist();
 
+	bool SetWorkspaceLock(bool value);
+
 private:
 	HWND m_Hwnd;
 	HMODULE m_HUserDLL;
