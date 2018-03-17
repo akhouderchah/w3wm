@@ -111,7 +111,7 @@ bool w3Context::Restart()
 
 void w3Context::LockScreen()
 {
-	if(!SetWorkspaceLock(true))
+	if(!AllowWorkstationLock(true))
 	{
 		DEBUG_MESSAGE(_T("Warning"), _T("Failed to enable workspace lock"));
 	}
@@ -125,7 +125,7 @@ void w3Context::OpenConsole()
 
 bool w3Context::MoveFocus(EGridDirection direction, bool bWrapAround)
 {
-	SetWorkspaceLock(false);
+	AllowWorkstationLock(false);
 	return pGridTest->MoveFocus(direction, bWrapAround);
 }
 
@@ -226,7 +226,7 @@ void w3Context::SetupBlacklist()
 	ADD_BLACKLIST_PREFIX(_T("TaskbarWindow"));
 }
 
-bool w3Context::SetWorkspaceLock(bool value)
+bool w3Context::AllowWorkstationLock(bool value)
 {
 	// Get registry key for DisableLockWorkstation
 	HKEY hKey;
