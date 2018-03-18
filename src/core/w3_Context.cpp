@@ -87,6 +87,9 @@ bool w3Context::Initialize(HINSTANCE hInstance)
 
 	InstallHooks(m_Hwnd);
 
+	// Read whether or not the workstation can lock at startup
+	m_InitialLockEnabled = CanWorkstationLock();
+
 	return Start();
 }
 
@@ -97,6 +100,9 @@ void w3Context::Shutdown()
 
 	// Remove the injected DLL
 	RemoveHooks();
+
+	// Set the original workstation lock enable/disable value
+	AllowWorkstationLock(m_InitialLockEnabled);
 }
 
 bool w3Context::Restart()
@@ -126,7 +132,25 @@ void w3Context::OpenConsole()
 bool w3Context::MoveFocus(EGridDirection direction, bool bWrapAround)
 {
 	AllowWorkstationLock(false);
-	return pGridTest->MoveFocus(direction, bWrapAround);
+
+	// Remove and re-install hooks so that key callback is at the top of the chain
+	RemoveHooks();
+	bool retVal = pGridTest->MoveFocus(direction, bWrapAround);
+	InstallHooks(m_Hwnd);
+
+	return retVal;
+}
+
+bool w3Context::MoveWindow(EGridDirection direction, bool bWrapAround)
+{
+	AllowWorkstationLock(false);
+
+	// Remove and re-install hooks so that key callback is at the top of the chain
+	RemoveHooks();
+	bool retVal = pGridTest->MoveWindow(direction, bWrapAround);
+	InstallHooks(m_Hwnd);
+
+	return retVal;
 }
 
 bool w3Context::Start()
@@ -241,6 +265,16 @@ bool w3Context::AllowWorkstationLock(bool value)
 	RegCloseKey(hKey);
 
 	return (result == ERROR_SUCCESS);
+}
+
+bool w3Context::CanWorkstationLock() const
+{
+	DWORD d, size = sizeof(d);
+	LONG result = RegGetValue(HKEY_CURRENT_USER,
+		_T("Software\\Microsoft\\Windows\\CurrentVersion\\Policies\\System"),
+		_T("DisableLockWorkstation"), RRF_RT_DWORD, NULL, &d, &size);
+
+	return (result != ERROR_SUCCESS) || !d;
 }
 
 BOOL CALLBACK MonitorProc(HMONITOR hMonitor, HDC hdcMonitor, LPRECT lprcMonitor, LPARAM dwData)

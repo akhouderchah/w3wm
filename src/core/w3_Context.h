@@ -50,6 +50,11 @@ public:
 	bool MoveFocus(EGridDirection direction, bool bWrapAround=true);
 
 	/**
+	 * @brief Move the current window towards the provided direction
+	 */
+	bool MoveWindow(EGridDirection direction, bool bWrapAround=true);
+
+	/**
 	 * @brief Return whether or not w3wm should track the given window
 	 */
 	bool IsRelevantWindow(HWND hwnd);
@@ -78,6 +83,11 @@ private:
 	 */
 	bool AllowWorkstationLock(bool value);
 
+	/**
+	 * @brief Read the registry to determine if workstation can lock
+	 */
+	bool CanWorkstationLock() const;
+
 private:
 	HWND m_Hwnd;
 	HMODULE m_HUserDLL;
@@ -86,6 +96,7 @@ private:
 	UINT m_ShellMsgID;
 
 	bool m_IsInitialized;
+	bool m_InitialLockEnabled;
 
 	TCHAR m_CmdPath[256];
 

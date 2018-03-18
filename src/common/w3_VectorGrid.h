@@ -101,6 +101,22 @@ public:
 	 */
 	inline size_t ColumnCount() const{ return m_Columns.size(); }
 
+	/**
+	 * @brief Return whether or not the current node is alone in the column
+	 *
+	 * @note This function should not be run if m_ColumnIndex is invalid (i.e. if
+	 *       the grid has no elements)
+	 */
+	inline bool IsLoneNode() const{ return (m_Columns[m_ColumnIndex].size() == 1); }
+
+	inline size_t GetColumnIndex() const{ return m_ColumnIndex; }
+	inline size_t GetRowIndex() const{ return m_RowIndex; }
+
+	inline bool SetColumnIndex(size_t col){
+		if(col < ColumnCount()){ m_ColumnIndex = col; return true; } return false; }
+	inline bool SetRowIndex(size_t row){
+		if(row < m_Columns[m_ColumnIndex].size()){ m_RowIndex = row; return true; } return false; }
+
 protected:
 	/**
 	 * @brief Get row index of adjacent column

@@ -23,10 +23,10 @@ typedef struct
 void ParseHotkey(HotkeyDef *pHotkey, LPCTSTR str);
 
 #define HOTKEYS(f) \
-	f(WND_LEFT, 0, 0) \
-	f(WND_RIGHT, 0, 0) \
-	f(WND_UP, 0, 0) \
-	f(WND_DOWN, 0, 0) \
+	f(WND_UP, 'K', EM_WIN | EM_SHIFT) \
+	f(WND_RIGHT, 'L', EM_WIN | EM_SHIFT) \
+	f(WND_DOWN, 'J', EM_WIN | EM_SHIFT) \
+	f(WND_LEFT, 'H', EM_WIN | EM_SHIFT) \
 	f(FOCUS_UP, 'K', EM_WIN) \
 	f(FOCUS_RIGHT, 'L', EM_WIN) \
 	f(FOCUS_DOWN, 'J', EM_WIN) \

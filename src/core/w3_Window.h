@@ -34,6 +34,13 @@ public:
 	bool MoveFocus(EGridDirection direction, bool bWrapAround=true);
 
 	/**
+	 * @brief Moves the current window in the specified direction
+	 *
+	 * @return True if the window position has actually changed
+	 */
+	bool MoveWindow(EGridDirection direction, bool bWrapAround=true);
+
+	/**
 	 * @brief Untrack all windows
 	 */
 	void Clear();
@@ -42,6 +49,9 @@ private:
 	 * @brief Set focus to the specified window
 	 */
 	bool FocusWindow(HWND hwnd);
+
+	bool InsertColumn(size_t colPos);
+	void RemoveColumn(size_t colPos);
 
 private:
 	struct Node
