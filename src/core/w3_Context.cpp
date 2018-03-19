@@ -202,6 +202,8 @@ bool w3Context::Start()
 
 	pGridTest->Apply();
 
+	pGridTest->FocusCurrent();
+
 	return true;
 }
 

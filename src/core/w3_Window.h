@@ -44,6 +44,15 @@ public:
 	 * @brief Untrack all windows
 	 */
 	void Clear();
+
+	/**
+	 * @brief Set focus on the current window
+	 */
+	inline bool FocusCurrent()
+	{
+		Node *pNode = m_Grid.GetCurrent();
+		if(pNode) return FocusWindow(pNode->m_Hwnd); return false;
+	}
 private:
 	/**
 	 * @brief Set focus to the specified window

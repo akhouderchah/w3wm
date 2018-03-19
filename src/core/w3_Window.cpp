@@ -138,7 +138,7 @@ bool WindowGrid::MoveWindow(EGridDirection direction, bool bWrapAround)
 		// Move window to new column
 		HWND hwnd = m_Grid[oldCol][m_Grid.GetRowIndex()].m_Hwnd;
 		m_Grid.InsertElement(newCol, 0, {hwnd, 1});
-		m_Grid[oldCol].m_TotalHeightWeight -= m_Grid[col+1][m_Grid.GetRowIndex()].m_HeightWeight;
+		m_Grid[oldCol].m_TotalHeightWeight -= m_Grid[oldCol][m_Grid.GetRowIndex()].m_HeightWeight;
 		m_Grid.RemoveElement(oldCol, m_Grid.GetRowIndex());
 		m_Grid[newCol].m_TotalHeightWeight = 1;
 
