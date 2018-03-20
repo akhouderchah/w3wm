@@ -27,11 +27,11 @@ void ParseHotkey(HotkeyDef *pHotkey, LPCTSTR str);
 	f(WND_RIGHT, 'L', EM_WIN | EM_SHIFT) \
 	f(WND_DOWN, 'J', EM_WIN | EM_SHIFT) \
 	f(WND_LEFT, 'H', EM_WIN | EM_SHIFT) \
+	f(WND_CLOSE, 'D', EM_WIN) \
 	f(FOCUS_UP, 'K', EM_WIN) \
 	f(FOCUS_RIGHT, 'L', EM_WIN) \
 	f(FOCUS_DOWN, 'J', EM_WIN) \
 	f(FOCUS_LEFT, 'H', EM_WIN) \
-	f(WND_CLOSE, 'A', EM_WIN) \
 	f(W3WM_CLOSE, 'Q', EM_WIN) \
 	f(W3WM_RESTART, 'R', EM_WIN) \
 	f(W3WM_LOCK, VK_HOME, EM_WIN) \

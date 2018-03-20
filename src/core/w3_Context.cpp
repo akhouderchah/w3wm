@@ -279,6 +279,19 @@ bool w3Context::CanWorkstationLock() const
 	return (result != ERROR_SUCCESS) || !d;
 }
 
+w3Context::WindowCoord w3Context::FindWindow(HWND hwnd) const
+{
+	// TODO !! this implementation is temporary and must change after
+	// multi-monitor support is added !!
+	size_t col=0, row=0;
+	if(pGridTest->Find(hwnd, &col, &row))
+	{
+		return {pGridTest, col, row};
+	}
+
+	return {nullptr, col, row};
+}
+
 BOOL CALLBACK MonitorProc(HMONITOR hMonitor, HDC hdcMonitor, LPRECT lprcMonitor, LPARAM dwData)
 {
 	if(lprcMonitor->left == 0 && lprcMonitor->top == 0)
@@ -293,6 +306,35 @@ BOOL CALLBACK MonitorProc(HMONITOR hMonitor, HDC hdcMonitor, LPRECT lprcMonitor,
 	}
 
 	return TRUE;
+}
+
+bool w3Context::CloseWindow()
+{
+	// TODO must change when multi-monitor support is added
+	HWND wnd = pGridTest->GetCurrent();
+	if(wnd != (HWND)0)
+	{
+		// Note: technically, the window could handle WM_CLOSE
+		// in a way that would lead to different behavior than
+		// calling DestroyWindow. Since we can't call DestroyWindow
+		// from this thread, though, this will hopefully be sufficient.
+		return !!::PostMessage(wnd, WM_CLOSE, 0, 0);
+	}
+	return false;
+}
+
+bool w3Context::UntrackWindow(HWND wnd)
+{
+	WindowCoord coord = FindWindow(wnd);
+
+	if(!coord.m_pWorkspace)
+	{
+		return false;
+	}
+
+	coord.m_pWorkspace->Remove(coord.m_Column, coord.m_Row);
+	coord.m_pWorkspace->Apply();
+	return true;
 }
 
 bool w3Context::IsRelevantWindow(HWND hwnd)

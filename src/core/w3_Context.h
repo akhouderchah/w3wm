@@ -55,6 +55,18 @@ public:
 	bool MoveWindow(EGridDirection direction, bool bWrapAround=true);
 
 	/**
+	 * @brief Close the current window
+	 * @return true if a window was closed, false otherwise
+	 */
+	bool CloseWindow();
+
+	/**
+	 * @brief Find and untrack window
+	 * @return true if window was found, false otherwise
+	 */
+	bool UntrackWindow(HWND wnd);
+
+	/**
 	 * @brief Return whether or not w3wm should track the given window
 	 */
 	bool IsRelevantWindow(HWND hwnd);
@@ -87,6 +99,21 @@ private:
 	 * @brief Read the registry to determine if workstation can lock
 	 */
 	bool CanWorkstationLock() const;
+
+	/**
+	 * @brief w3 representation of an HWND's location
+	 */
+	struct WindowCoord
+	{
+		class WindowGrid *m_pWorkspace;
+		size_t m_Column;
+		size_t m_Row;
+	};
+
+	/**
+	 * @brief Find the provided window
+	 */
+	WindowCoord FindWindow(HWND hwnd) const;
 
 private:
 	HWND m_Hwnd;

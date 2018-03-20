@@ -7,6 +7,25 @@ WindowGrid::WindowGrid(LPRECT pMonitorRect, float dpiScaling) :
 {
 }
 
+WindowGrid::WindowGrid(WindowGrid &&other) :
+	m_Grid(std::move(other.m_Grid)), m_DefaultWidthWeight(other.m_DefaultWidthWeight),
+	m_TotalWidthWeight(other.m_TotalWidthWeight), m_MonitorRect(std::move(other.m_MonitorRect)),
+	m_DpiScaling(other.m_DpiScaling)
+{
+}
+
+WindowGrid &WindowGrid::operator=(WindowGrid &&other)
+{
+	m_Grid = std::move(other.m_Grid);
+
+	m_DefaultWidthWeight = other.m_DefaultWidthWeight;
+	m_TotalWidthWeight = other.m_TotalWidthWeight;
+	m_MonitorRect = std::move(m_MonitorRect);
+	m_DpiScaling = other.m_DpiScaling;
+
+	return *this;
+}
+
 bool WindowGrid::Insert(HWND hwnd)
 {
 	// Make sure window isn't min/max-imized
@@ -26,6 +45,54 @@ bool WindowGrid::Insert(HWND hwnd)
 	SetFocus(hwnd);
 
 	return true;
+}
+
+void WindowGrid::Remove(size_t col, size_t row)
+{
+	// If column will be empty, just remove it
+	if(m_Grid[col].size() == 1)
+	{
+		RemoveColumn(col);
+	}
+	else // otherwise, update column weights & remove window
+	{
+		m_Grid[col].m_TotalHeightWeight -= m_Grid[col][row].m_HeightWeight;
+		m_Grid.RemoveElement(col, row);
+	}
+}
+
+HWND WindowGrid::GetCurrent()
+{
+	Node *pNode = m_Grid.GetCurrent();
+	if(pNode)
+	{
+		return pNode->m_Hwnd;
+	}
+	return (HWND)0;
+}
+
+bool WindowGrid::Find(HWND wnd, size_t *pCol, size_t *pRow)
+{
+	/** The current implementation will simply iterate through all columns to
+	 * search for the window. This may be modified in the future to search
+	 * based on location, but WindowGrids are currently expected to hold relatively
+	 * few windows, so the O(n^2) behavior here should still be acceptable. */
+
+	for(size_t col = 0; col < m_Grid.ColumnCount(); ++col)
+	{
+		auto &currCol = m_Grid[col];
+		for(size_t row = 0; row < currCol.size(); ++row)
+		{
+			if(currCol[row].m_Hwnd == wnd)
+			{
+				if(pCol) *pCol = col;
+				if(pRow) *pRow = row;
+				return true;
+			}
+		}
+	}
+
+	return false;
 }
 
 bool WindowGrid::InsertColumn(size_t colPos)

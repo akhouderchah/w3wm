@@ -33,6 +33,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			switch(lParam)
 			{
 				case EH_WND_CLOSE:
+					g_Context.CloseWindow();
 					break;
 				case EH_FOCUS_UP:
 				case EH_FOCUS_RIGHT:
@@ -71,7 +72,13 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 				case HSHELL_WINDOWCREATED:
 					break;
 				case HSHELL_WINDOWDESTROYED:
+				{
+					// Note: We don't check if the window is relevant,
+					// since a destroyed window might no longer satisfy
+					// the criteria of a relevant window
+					g_Context.UntrackWindow((HWND)lParam);
 					break;
+				}
 				case HSHELL_WINDOWACTIVATED:
 				case HSHELL_RUDEAPPACTIVATED:
 					break;

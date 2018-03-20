@@ -16,10 +16,30 @@ public:
 	WindowGrid(LPRECT pMonitorRect, float dpiScaling=1.f);
 	~WindowGrid(){ Clear(); }
 
+	WindowGrid(WindowGrid &&other);
+	WindowGrid &operator=(WindowGrid &&other);
+
 	/**
 	 * @brief Add an untracked window, placing it in a new, right-most column
 	 */
 	bool Insert(HWND hwnd);
+
+	/**
+	 * @brief Remove an element from the grid
+	 */
+	void Remove(size_t col, size_t row);
+
+	/**
+	 * @brief Get the current window in this grid
+	 * @return 0 if grid is empty. Else the proper HWND.
+	 */
+	HWND GetCurrent();
+
+	/**
+	 * @brief Find the location of an HWND in the grid
+	 * @return True if the HWND is in this grid
+	 */
+	bool Find(HWND wnd, size_t *pCol, size_t *pRow);
 
 	/**
 	 * @brief Move/resize windows to match the grid representation
@@ -27,15 +47,13 @@ public:
 	void Apply();
 
 	/**
-	 * @brief Sets focus to the window in the specified direction
-	 *
+	 * @brief Set focus to the window in the specified direction
 	 * @return True if the current position actually changed
 	 */
 	bool MoveFocus(EGridDirection direction, bool bWrapAround=true);
 
 	/**
-	 * @brief Moves the current window in the specified direction
-	 *
+	 * @brief Move the current window in the specified direction
 	 * @return True if the window position has actually changed
 	 */
 	bool MoveWindow(EGridDirection direction, bool bWrapAround=true);
