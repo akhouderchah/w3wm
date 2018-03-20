@@ -70,7 +70,14 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 				switch(wParam)
 				{
 				case HSHELL_WINDOWCREATED:
+				{
+					HWND wnd = (HWND)lParam;
+					if(g_Context.IsRelevantWindow(wnd))
+					{
+						g_Context.TrackWindow(wnd);
+					}
 					break;
+				}
 				case HSHELL_WINDOWDESTROYED:
 				{
 					// Note: We don't check if the window is relevant,

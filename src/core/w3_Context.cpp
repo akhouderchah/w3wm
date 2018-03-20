@@ -323,6 +323,17 @@ bool w3Context::CloseWindow()
 	return false;
 }
 
+bool w3Context::TrackWindow(HWND wnd)
+{
+	// TODO must change when multi-monitor support is added
+	bool success = pGridTest->Insert(wnd);
+	if(success)
+	{
+		pGridTest->Apply();
+	}
+	return success;
+}
+
 bool w3Context::UntrackWindow(HWND wnd)
 {
 	WindowCoord coord = FindWindow(wnd);

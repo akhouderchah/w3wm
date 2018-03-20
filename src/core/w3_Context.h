@@ -61,6 +61,12 @@ public:
 	bool CloseWindow();
 
 	/**
+	 * @brief Track window in the proper workspace
+	 * @return Whether or not the window is now being tracked
+	 */
+	bool TrackWindow(HWND wnd);
+
+	/**
 	 * @brief Find and untrack window
 	 * @return true if window was found, false otherwise
 	 */
