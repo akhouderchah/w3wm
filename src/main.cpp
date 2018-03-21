@@ -27,6 +27,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 	switch(message)
 	{
 		case WM_DESTROY:
+			g_Context.Shutdown();
 			PostQuitMessage(WM_QUIT);
 			break;
 		case WM_HOTKEY:
@@ -48,7 +49,6 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 					g_Context.MoveWindow(EGridDirection(lParam-EH_WND_UP));
 					break;
 				case EH_W3WM_CLOSE:
-					g_Context.Shutdown();
 					PostQuitMessage(WM_QUIT);
 					break;
 				case EH_W3WM_RESTART:

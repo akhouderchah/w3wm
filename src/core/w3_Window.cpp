@@ -53,6 +53,7 @@ void WindowGrid::Remove(size_t col, size_t row)
 	if(m_Grid[col].size() == 1)
 	{
 		RemoveColumn(col);
+		m_Grid.SetColumnIndex(std::min(m_Grid.GetColumnIndex(), m_Grid.ColumnCount()-1));
 	}
 	else // otherwise, update column weights & remove window
 	{
@@ -262,24 +263,27 @@ bool WindowGrid::FocusWindow(HWND hwnd)
 	// Move cursor into window
 	RECT r;
 	GetWindowRect(hwnd, &r);
-	ClipCursor(&r);
+
+	// Click on top corner of window
+	//
+	// This is a hack, but it should work in cases EXCEPT where there
+	// are windows whose minimum width is greater than the width assigned
+	// to it by the grid. If this is the case, then those windows may cover
+	// up the top-left corners of windows to their right
+	ClipCursor(0);
+	SetCursorPos(r.left+10, r.top+1);
+
+	INPUT click = {0};
+	click.type = INPUT_MOUSE;
+	click.mi.dwFlags = MOUSEEVENTF_LEFTDOWN;
+	SendInput(1, &click, sizeof(INPUT));
+
+	click.mi.dwFlags = MOUSEEVENTF_LEFTUP;
+	SendInput(1, &click, sizeof(INPUT));
+
+	// Clip cursor to within bounds of window
 	SetCursorPos(r.left + (r.right-r.left)/2, r.top + (r.bottom-r.top)/2);
-
-	// Make hwnd the active window
-	DWORD currentThreadId = GetCurrentThreadId();
-	DWORD newThreadId = GetWindowThreadProcessId(hwnd, NULL);
-	if(!newThreadId) return false;
-	if(newThreadId != currentThreadId)
-	{
-		AttachThreadInput(currentThreadId, newThreadId, TRUE);
-	}
-
-	SetActiveWindow(hwnd);
-
-	if(newThreadId != currentThreadId)
-	{
-		AttachThreadInput(currentThreadId, newThreadId, FALSE);
-	}
+	ClipCursor(&r);
 
 	return true;
 }
