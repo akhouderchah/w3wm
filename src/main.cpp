@@ -52,6 +52,9 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 				case EH_WND_LEFT:
 					g_Context.MoveWindow(EGridDirection(lParam-EH_WND_UP));
 					break;
+				case EH_WND_FULLSCREEN:
+					g_Context.ToggleFullscreen();
+					break;
 				case EH_W3WM_CLOSE:
 					PostQuitMessage(WM_QUIT);
 					break;

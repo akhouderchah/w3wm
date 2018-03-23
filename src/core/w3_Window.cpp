@@ -3,14 +3,15 @@
 
 WindowGrid::WindowGrid() :
 	m_DefaultWidthWeight(1), m_TotalWidthWeight(0),
-	m_IsActive(false)
+	m_IsActive(false), m_IsFullscreenMode(false)
 {
 }
 
 WindowGrid::WindowGrid(WindowGrid &&other) :
 	m_Grid(std::move(other.m_Grid)), m_DefaultWidthWeight(other.m_DefaultWidthWeight),
 	m_TotalWidthWeight(other.m_TotalWidthWeight), m_MonitorRect(std::move(other.m_MonitorRect)),
-	m_DpiScaling(other.m_DpiScaling), m_IsActive(other.m_IsActive)
+	m_DpiScaling(other.m_DpiScaling), m_IsActive(other.m_IsActive),
+	m_IsFullscreenMode(other.m_IsFullscreenMode)
 {
 	other.m_IsActive = false;
 }
@@ -26,6 +27,7 @@ WindowGrid &WindowGrid::operator=(WindowGrid &&other)
 
 	m_IsActive = other.m_IsActive;
 	other.m_IsActive = false;
+	m_IsFullscreenMode = other.m_IsFullscreenMode;
 
 	return *this;
 }
@@ -56,6 +58,9 @@ bool WindowGrid::Insert(HWND hwnd, EGridDirection directionFrom)
 		return false;
 	}
 
+	// Get out of fullscreen mode if insertion is successful
+	m_IsFullscreenMode = false;
+
 	return true;
 }
 
@@ -72,6 +77,9 @@ void WindowGrid::Remove(size_t col, size_t row)
 		m_Grid[col].m_TotalHeightWeight -= m_Grid[col][row].m_HeightWeight;
 		m_Grid.RemoveElement(col, row);
 	}
+
+	// Get out of fullscreen mode on window removal
+	m_IsFullscreenMode = false;
 }
 
 HWND WindowGrid::GetCurrent()
@@ -137,11 +145,24 @@ void WindowGrid::RemoveColumn(size_t colPos)
 
 void WindowGrid::Apply()
 {
-	if(!m_IsActive || !m_TotalWidthWeight) return;
+	if(!m_IsActive || !m_TotalWidthWeight || !m_Grid.ColumnCount()) return;
 
 	LONG totalWidth = m_MonitorRect.right - m_MonitorRect.left;
 	LONG totalHeight = m_MonitorRect.bottom - m_MonitorRect.top;
 	float widthUnit = float(totalWidth) / m_TotalWidthWeight;
+
+	if(m_IsFullscreenMode)
+	{
+		// Simply display current window at full size
+		float scaling = true ? m_DpiScaling : 1.f; // TODO change true to IsDPIAware
+		::MoveWindow(GetCurrent(),
+			m_MonitorRect.left * scaling,
+			m_MonitorRect.top * scaling,
+			totalWidth * scaling,
+			totalHeight * scaling,
+			true);
+		return;
+	}
 
 	auto colCount = m_Grid.ColumnCount();
 	decltype(colCount) i;
@@ -172,7 +193,7 @@ void WindowGrid::Apply()
 				currentTop * scaling,
 				(currentRight - currentLeft + 1) * scaling,
 				(currentBottom - currentTop + 1) * scaling,
-				1);
+				true);
 
 			currentTop = currentBottom;
 		}
@@ -189,7 +210,7 @@ void WindowGrid::Apply()
 
 bool WindowGrid::MoveFocus(EGridDirection direction, bool bWrapAround)
 {
-	bool bChanged = m_Grid.Move(direction, bWrapAround);
+	bool bChanged = !m_IsFullscreenMode && m_Grid.Move(direction, bWrapAround);
 	if(bChanged)
 	{
 		Node *pNode = m_Grid.GetCurrent();
@@ -203,7 +224,7 @@ bool WindowGrid::MoveWindow(EGridDirection direction, bool bWrapAround)
 {
 	assert(0 <= direction && direction < EGD_COUNT);
 
-	if(m_Grid.ColumnCount() == 0){ return false; }
+	if(m_Grid.ColumnCount() == 0 || m_IsFullscreenMode){ return false; }
 
 	// If move is horizontal and window is not alone in the column,
 	// place into its own column

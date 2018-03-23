@@ -88,6 +88,16 @@ public:
 		Node *pNode = m_Grid.GetCurrent();
 		if(pNode) return FocusWindow(pNode->m_Hwnd); return false;
 	}
+
+	/**
+	 * @brief Toggle whether or not the current window is fullscreened
+	 */
+	inline void ToggleFullscreen(){ m_IsFullscreenMode = !m_IsFullscreenMode && m_Grid.ColumnCount(); }
+
+	/**
+	 * @brief Return whether or not this grid has any nodes
+	 */
+	inline bool IsEmpty() const{ return !m_Grid.ColumnCount(); }
 private:
 	/**
 	 * @brief Set focus to the specified window
@@ -120,4 +130,5 @@ private:
 	RECT m_MonitorRect;
 	float m_DpiScaling;
 	bool m_IsActive;
+	bool m_IsFullscreenMode; // Is the current window fullscreened?
 };

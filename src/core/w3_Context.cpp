@@ -380,11 +380,11 @@ bool w3Context::CloseWindow()
 
 bool w3Context::TrackWindow(HWND wnd)
 {
-	// TODO must change when multi-monitor support is added
 	bool success = GetWorkspace().Insert(wnd);
 	if(success)
 	{
 		GetWorkspace().Apply();
+		GetWorkspace().FocusCurrent();
 	}
 	return success;
 }
@@ -400,6 +400,8 @@ bool w3Context::UntrackWindow(HWND wnd)
 
 	s_Workspaces[coord.m_WorkspaceIndex].Remove(coord.m_Column, coord.m_Row);
 	s_Workspaces[coord.m_WorkspaceIndex].Apply();
+
+	GetWorkspace().FocusCurrent();
 	return true;
 }
 

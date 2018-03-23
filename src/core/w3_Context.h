@@ -62,6 +62,11 @@ public:
 	bool CloseWindow();
 
 	/**
+	 * @brief Toggle whether the current window is fullscreened
+	 */
+	inline void ToggleFullscreen(){ GetWorkspace().ToggleFullscreen(); GetWorkspace().Apply(); }
+
+	/**
 	 * @brief Track window in the proper workspace
 	 * @return Whether or not the window is now being tracked
 	 */
