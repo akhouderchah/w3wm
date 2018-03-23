@@ -2,6 +2,7 @@
 
 #include <windows.h>
 #include "w3_Monitor.h"
+#include "w3_Window.h"
 
 #include <unordered_set>
 
@@ -111,7 +112,10 @@ private:
 	 */
 	struct WindowCoord
 	{
-		class WindowGrid *m_pWorkspace;
+		inline bool IsValid() const{ return m_WorkspaceIndex != -1l; }
+		static WindowCoord CreateNull(){ return {-1l, 0, 0}; }
+
+		size_t m_WorkspaceIndex;
 		size_t m_Column;
 		size_t m_Row;
 	};
@@ -121,10 +125,14 @@ private:
 	 */
 	WindowCoord FindWindow(HWND hwnd) const;
 
+	inline WindowGrid &GetWorkspace() const{
+		assert(s_ActiveWorkspace < s_Workspaces.size());
+		return s_Workspaces[s_ActiveWorkspace];
+	}
+
 private:
 	HWND m_Hwnd;
 	HMODULE m_HUserDLL;
-	MonitorGrid m_Monitors;
 
 	UINT m_ShellMsgID;
 
@@ -135,4 +143,10 @@ private:
 
 	std::unordered_set<std::basic_string<TCHAR>> m_ClassBlacklist;
 	std::unordered_set<int> m_PrefixLengths;
+
+	friend BOOL CALLBACK MonitorProc(HMONITOR,HDC,LPRECT,LPARAM);
+	friend BOOL CALLBACK EnumWindowProc_Register(HWND,LPARAM);
+	static MonitorGrid s_Monitors;
+	static std::vector<WindowGrid> s_Workspaces;
+	static size_t s_ActiveWorkspace;
 };

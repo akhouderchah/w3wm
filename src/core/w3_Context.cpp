@@ -2,9 +2,6 @@
 #include "w3_Core.h"
 #include "w3_DLL.h"
 
-// TODO REMOVE
-#include "w3_Window.h"
-
 #include <windows.h>
 #include "Shlwapi.h"
 #include <vector>
@@ -13,12 +10,9 @@ extern LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM l
 BOOL CALLBACK MonitorProc(HMONITOR hMonitor, HDC hdcMonitor, LPRECT lprcMonitor, LPARAM dwData);
 BOOL CALLBACK EnumWindowProc_Register(HWND hwnd, LPARAM lParam);
 
-std::vector<MonitorInfo> g_SecondaryMonitors;
-MonitorInfo g_PrimaryMonitor;
-bool g_IsPrimarySet = false;
-
-// TODO REMOVE
-WindowGrid *pGridTest;
+MonitorGrid w3Context::s_Monitors;
+std::vector<WindowGrid> w3Context::s_Workspaces;
+size_t w3Context::s_ActiveWorkspace = 0;
 
 #define ADD_BLACKLIST(str) \
 	m_ClassBlacklist.insert(str)
@@ -108,9 +102,8 @@ void w3Context::Shutdown()
 bool w3Context::Restart()
 {
 	// Clear state that will be replaced after calling Start()
-	m_Monitors.Clear();
+	s_Monitors.Clear();
 	m_ClassBlacklist.clear();
-	g_IsPrimarySet = false;
 
 	return Start();
 }
@@ -135,7 +128,28 @@ bool w3Context::MoveFocus(EGridDirection direction, bool bWrapAround)
 
 	// Remove and re-install hooks so that key callback is at the top of the chain
 	RemoveHooks();
-	bool retVal = pGridTest->MoveFocus(direction, bWrapAround);
+	bool retVal = GetWorkspace().MoveFocus(direction, false);
+
+	// If window is at edge, try to move monitors
+	if(!retVal)
+	{
+		retVal = s_Monitors.Move(direction, bWrapAround);
+
+		if(retVal)
+		{
+			// If in new monitor, focus in its workspace
+			s_ActiveWorkspace = s_Monitors.GetWorkspaceIndex();
+
+			GetWorkspace().MoveToEdgeFrom(direction);
+			retVal = GetWorkspace().FocusCurrent();
+		}
+		else if(bWrapAround)
+		{
+			// If no new monitor, wrap on single workspace if needed
+			retVal = GetWorkspace().MoveFocus(direction, bWrapAround);
+		}
+	}
+
 	InstallHooks(m_Hwnd);
 
 	return retVal;
@@ -147,8 +161,38 @@ bool w3Context::MoveWindow(EGridDirection direction, bool bWrapAround)
 
 	// Remove and re-install hooks so that key callback is at the top of the chain
 	RemoveHooks();
-	bool retVal = pGridTest->MoveWindow(direction, bWrapAround);
+	bool retVal = GetWorkspace().MoveWindow(direction, false);
+
+	// If window is at edge, try to move monitors
+	if(!retVal)
+	{
+		retVal = s_Monitors.Move(direction, bWrapAround);
+		if(retVal)
+		{
+			// Set workspace to that of the new monitor
+			size_t newWorkspace = s_Monitors.GetWorkspaceIndex();
+
+			// Insert window to this workspace
+			retVal = s_Workspaces[newWorkspace].Insert(GetWorkspace().GetCurrent(), direction);
+
+			// Remove window from the old workspace
+			GetWorkspace().RemoveCurrent();
+			GetWorkspace().Apply();
+
+			// Update to new workspace
+			s_ActiveWorkspace = newWorkspace;
+			GetWorkspace().Apply();
+			GetWorkspace().MoveToEdgeFrom(direction);
+		}
+		else if(bWrapAround)
+		{
+			// If no new monitor and wrapping, just wrap on single workspace
+			retVal = GetWorkspace().MoveWindow(direction, bWrapAround);
+		}
+	}
 	InstallHooks(m_Hwnd);
+
+	GetWorkspace().FocusCurrent();
 
 	return retVal;
 }
@@ -183,26 +227,33 @@ bool w3Context::Start()
 		return false;
 	}
 
-	// Add monitors to m_Monitors if we found the primary monitor
-	if(!g_IsPrimarySet)
+	// Ensure the primary monitor was added to the MonitorGrid
+	if(!s_Monitors.HasPrimary())
 	{
 		MessageBoxEx(NULL, _T("Failed to find a primary monitor!"), T_ERROR_TITLE, MB_OK | MB_ICONERROR, 0);
+		s_Monitors.Clear();
 		return false;
 	}
 
-	m_Monitors.Insert(std::move(g_PrimaryMonitor));
-	for(MonitorInfo &info : g_SecondaryMonitors)
+	// Set active workspace to that of the first-enumerated monitor
+	// TODO perhaps set this instead to the primary monitor?
+	s_ActiveWorkspace = 0;
+	if(!s_Monitors.MoveToWorkspace(s_ActiveWorkspace))
 	{
-		m_Monitors.Insert(std::move(info));
+		RELEASE_MESSAGE(_T("Error"), _T("MonitorGrid failed to find the active workspace!"));
+		return false;
 	}
-	g_SecondaryMonitors.clear();
 
 	// Get windows
 	EnumWindows(EnumWindowProc_Register, (LPARAM)this);
 
-	pGridTest->Apply();
+	// Apply all workspaces
+	for(auto &workspace : s_Workspaces)
+	{
+		workspace.Apply();
+	}
 
-	pGridTest->FocusCurrent();
+	GetWorkspace().FocusCurrent();
 
 	return true;
 }
@@ -281,28 +332,32 @@ bool w3Context::CanWorkstationLock() const
 
 w3Context::WindowCoord w3Context::FindWindow(HWND hwnd) const
 {
-	// TODO !! this implementation is temporary and must change after
-	// multi-monitor support is added !!
-	size_t col=0, row=0;
-	if(pGridTest->Find(hwnd, &col, &row))
+	// TODO: The current implementation simply iterates through all
+	// workspaces to find a window. This may prove to be slow,
+	// and will probably need to be optimized in the future.
+	for(size_t i=0; i < s_Workspaces.size(); ++i)
 	{
-		return {pGridTest, col, row};
+		size_t col=0, row=0;
+		if(s_Workspaces[i].Find(hwnd, &col, &row))
+		{
+			return {i, col, row};
+		}
 	}
 
-	return {nullptr, col, row};
+	return WindowCoord::CreateNull();
 }
 
 BOOL CALLBACK MonitorProc(HMONITOR hMonitor, HDC hdcMonitor, LPRECT lprcMonitor, LPARAM dwData)
 {
-	if(lprcMonitor->left == 0 && lprcMonitor->top == 0)
+	// Track monitor
+	MonitorInfo *pMon = w3Context::s_Monitors.Insert(
+		{hMonitor, *lprcMonitor, *(float*)dwData, w3Context::s_Workspaces.size()});
+
+	if(pMon)
 	{
-		g_PrimaryMonitor = {hdcMonitor, *lprcMonitor};
-		pGridTest = new WindowGrid(lprcMonitor, *(float*)dwData);
-		g_IsPrimarySet = true;
-	}
-	else
-	{
-		g_SecondaryMonitors.push_back({hdcMonitor, *lprcMonitor});
+		// Create workspace for the monitor
+		w3Context::s_Workspaces.push_back(WindowGrid());
+		w3Context::s_Workspaces.rbegin()->AttachToMonitor(*pMon);
 	}
 
 	return TRUE;
@@ -311,7 +366,7 @@ BOOL CALLBACK MonitorProc(HMONITOR hMonitor, HDC hdcMonitor, LPRECT lprcMonitor,
 bool w3Context::CloseWindow()
 {
 	// TODO must change when multi-monitor support is added
-	HWND wnd = pGridTest->GetCurrent();
+	HWND wnd = GetWorkspace().GetCurrent();
 	if(wnd != (HWND)0)
 	{
 		// Note: technically, the window could handle WM_CLOSE
@@ -326,10 +381,10 @@ bool w3Context::CloseWindow()
 bool w3Context::TrackWindow(HWND wnd)
 {
 	// TODO must change when multi-monitor support is added
-	bool success = pGridTest->Insert(wnd);
+	bool success = GetWorkspace().Insert(wnd);
 	if(success)
 	{
-		pGridTest->Apply();
+		GetWorkspace().Apply();
 	}
 	return success;
 }
@@ -338,13 +393,13 @@ bool w3Context::UntrackWindow(HWND wnd)
 {
 	WindowCoord coord = FindWindow(wnd);
 
-	if(!coord.m_pWorkspace)
+	if(!coord.IsValid())
 	{
 		return false;
 	}
 
-	coord.m_pWorkspace->Remove(coord.m_Column, coord.m_Row);
-	coord.m_pWorkspace->Apply();
+	s_Workspaces[coord.m_WorkspaceIndex].Remove(coord.m_Column, coord.m_Row);
+	s_Workspaces[coord.m_WorkspaceIndex].Apply();
 	return true;
 }
 
@@ -390,9 +445,12 @@ bool w3Context::IsRelevantWindow(HWND hwnd)
 
 BOOL CALLBACK EnumWindowProc_Register(HWND hwnd, LPARAM lParam)
 {
+	static int i = 0;
 	if(((w3Context*)lParam)->IsRelevantWindow(hwnd))
 	{
-		pGridTest->Insert(hwnd);
+		// TODO - Try to determine the proper monitor to put windows in
+		//w3Context::s_Workspaces[w3Context::s_ActiveWorkspace].Insert(hwnd);
+		w3Context::s_Workspaces[i++ % w3Context::s_Workspaces.size()].Insert(hwnd);
 	}
 
 	return TRUE;

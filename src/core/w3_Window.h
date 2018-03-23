@@ -8,12 +8,12 @@
  * Much of the window tiling functionality is contained in this class.
  *
  * @note This class will usually not be used directly, but will instead be
- *       be used by MonitorGrid or WindowManager.
+ *       be used by w3Context.
  */
 class WindowGrid
 {
 public:
-	WindowGrid(LPRECT pMonitorRect, float dpiScaling=1.f);
+	WindowGrid();
 	~WindowGrid(){ Clear(); }
 
 	WindowGrid(WindowGrid &&other);
@@ -22,12 +22,17 @@ public:
 	/**
 	 * @brief Add an untracked window, placing it in a new, right-most column
 	 */
-	bool Insert(HWND hwnd);
+	bool Insert(HWND hwnd, EGridDirection directionFrom=EGD_LEFT);
 
 	/**
 	 * @brief Remove an element from the grid
 	 */
 	void Remove(size_t col, size_t row);
+
+	/**
+	 * @brief Remove the current element from the grid
+	 */
+	inline void RemoveCurrent(){ Remove(m_Grid.GetColumnIndex(), m_Grid.GetRowIndex()); }
 
 	/**
 	 * @brief Get the current window in this grid
@@ -59,9 +64,21 @@ public:
 	bool MoveWindow(EGridDirection direction, bool bWrapAround=true);
 
 	/**
+	 * @brief Set current position to grid edge, coming from specified direction
+	 */
+	void MoveToEdgeFrom(EGridDirection direction);
+
+	/**
 	 * @brief Untrack all windows
 	 */
 	void Clear();
+
+	/**
+	 * @brief Activate and set the virtual screen coords of this grid
+	 * @note No changes will be visible until the next Apply()
+	 * @return Whether or not attachment was successful
+	 */
+	bool AttachToMonitor(MonitorInfo &monitor);
 
 	/**
 	 * @brief Set focus on the current window
@@ -102,4 +119,5 @@ private:
 
 	RECT m_MonitorRect;
 	float m_DpiScaling;
+	bool m_IsActive;
 };

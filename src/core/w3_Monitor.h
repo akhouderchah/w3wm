@@ -3,27 +3,47 @@
 #include <windows.h>
 #include "w3_Grid.h"
 
-struct MonitorInfo
-{
-	HDC hMonitor;
-	RECT screenBounds;
-};
-
-class MonitorGrid : public _LinkedGrid
+class MonitorGrid
 {
 public:
 	MonitorGrid();
 	~MonitorGrid(){ Clear(); }
 
-	bool Insert(MonitorInfo &&info);
+	/**
+	 * @brief Add new, untracked monitor to the grid
+	 * @return If successful, pointer to the inserted info, else nullptr.
+	 */
+	MonitorInfo *Insert(MonitorInfo &&info);
 
-	const MonitorInfo &GetCurrentMonitor() const;
-	const MonitorInfo &Move(EGridDirection direction);
+	/**
+	 * @brief Set the current monitor to the nearest one in direction
+	 * @return True if the current position actually changed
+	 */
+	bool Move(EGridDirection direction, bool bWrapAround=true);
 
-	inline bool IsEmpty() const{ return m_pCurrentNode == nullptr; }
+	/**
+	 * @brief Get the workspace index attached to the current monitor
+	 * @return Workspace index if there is one, -1 (max size_t value) else
+	 */
+	size_t GetWorkspaceIndex();
 
+	/**
+	 * @brief Move to the monitor with the attached workspace
+	 * @return True if such a monitor was found, false otherwise
+	 */
+	bool MoveToWorkspace(size_t workspaceIndex);
+
+	/**
+	 * @brief Untrack all monitors
+	 */
 	void Clear();
 
+	/**
+	 * @return Whether or not this grid contains the primary monitor
+	 */
+	inline bool HasPrimary() const{ return m_HasPrimary; }
+
 private:
-	GridNode<MonitorInfo> *m_pCurrentNode;
+	VectorGrid<MonitorInfo> m_Grid;
+	bool m_HasPrimary;
 };

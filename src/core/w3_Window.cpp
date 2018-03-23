@@ -1,17 +1,18 @@
 #include "w3_Window.h"
 #include <memory>
 
-WindowGrid::WindowGrid(LPRECT pMonitorRect, float dpiScaling) :
-	m_DefaultWidthWeight(1), m_MonitorRect(*pMonitorRect),
-	m_DpiScaling(dpiScaling)
+WindowGrid::WindowGrid() :
+	m_DefaultWidthWeight(1), m_TotalWidthWeight(0),
+	m_IsActive(false)
 {
 }
 
 WindowGrid::WindowGrid(WindowGrid &&other) :
 	m_Grid(std::move(other.m_Grid)), m_DefaultWidthWeight(other.m_DefaultWidthWeight),
 	m_TotalWidthWeight(other.m_TotalWidthWeight), m_MonitorRect(std::move(other.m_MonitorRect)),
-	m_DpiScaling(other.m_DpiScaling)
+	m_DpiScaling(other.m_DpiScaling), m_IsActive(other.m_IsActive)
 {
+	other.m_IsActive = false;
 }
 
 WindowGrid &WindowGrid::operator=(WindowGrid &&other)
@@ -23,26 +24,37 @@ WindowGrid &WindowGrid::operator=(WindowGrid &&other)
 	m_MonitorRect = std::move(m_MonitorRect);
 	m_DpiScaling = other.m_DpiScaling;
 
+	m_IsActive = other.m_IsActive;
+	other.m_IsActive = false;
+
 	return *this;
 }
 
-bool WindowGrid::Insert(HWND hwnd)
+bool WindowGrid::Insert(HWND hwnd, EGridDirection directionFrom)
 {
+	assert(EGD_UP <= directionFrom && directionFrom < EGD_COUNT);
+
 	// Make sure window isn't min/max-imized
 	ShowWindow(hwnd, SW_RESTORE);
 
-	// Make new right-most column for window
-	if(!InsertColumn(m_Grid.ColumnCount()))
+	if(directionFrom & 0x1)
 	{
+		// Make new right- or left-most column for window
+		size_t col = (directionFrom/2) * m_Grid.ColumnCount();
+		if(!InsertColumn(col))
+		{
+			return false;
+		}
+
+		// Place window in column
+		m_Grid.InsertElement(col, 0, {hwnd, 1});
+		m_Grid[col].m_TotalHeightWeight = 1;
+	}
+	else
+	{
+		// TODO add vertical direction logic
 		return false;
 	}
-
-	// Place window in column
-	m_Grid.InsertElement(m_Grid.ColumnCount()-1, 0, {hwnd, 1});
-	m_Grid[m_Grid.ColumnCount()-1].m_TotalHeightWeight = 1;
-
-	// Set focus to inserted window
-	SetFocus(hwnd);
 
 	return true;
 }
@@ -125,6 +137,8 @@ void WindowGrid::RemoveColumn(size_t colPos)
 
 void WindowGrid::Apply()
 {
+	if(!m_IsActive || !m_TotalWidthWeight) return;
+
 	LONG totalWidth = m_MonitorRect.right - m_MonitorRect.left;
 	LONG totalHeight = m_MonitorRect.bottom - m_MonitorRect.top;
 	float widthUnit = float(totalWidth) / m_TotalWidthWeight;
@@ -252,10 +266,38 @@ bool WindowGrid::MoveWindow(EGridDirection direction, bool bWrapAround)
 	return bChanged;
 }
 
+void WindowGrid::MoveToEdgeFrom(EGridDirection direction)
+{
+	assert(EGD_UP <= direction && direction < EGD_COUNT);
+
+	if(direction & 0x1) // horizontal move
+	{
+		m_Grid.SetColumnIndex((direction/2) * (m_Grid.ColumnCount()-1));
+
+		// Ensure row index is still valid
+		m_Grid.SetRowIndex(std::min(m_Grid.GetRowIndex(), m_Grid[m_Grid.GetColumnIndex()].size()));
+	}
+
+	// TODO create logic for vertical moves as well
+}
+
 void WindowGrid::Clear()
 {
 	m_Grid.Clear();
 	m_TotalWidthWeight = 0;
+}
+
+bool WindowGrid::AttachToMonitor(MonitorInfo &monitor)
+{
+	if(m_IsActive)
+	{
+		return false;
+	}
+
+	m_MonitorRect = monitor.m_ScreenBounds;
+	m_DpiScaling = monitor.m_DpiScaling;
+	m_IsActive = true;
+	return true;
 }
 
 bool WindowGrid::FocusWindow(HWND hwnd)

@@ -1,63 +1,85 @@
 #include "w3_Monitor.h"
 #include <cassert>
-#include <memory>
 
 MonitorGrid::MonitorGrid() :
-	m_pCurrentNode(nullptr)
-{}
-
-bool MonitorGrid::Insert(MonitorInfo &&info)
+	m_HasPrimary(false)
 {
-	// NOTE: This entire function is a test implementation. It may be rewritten from scratch
-	// in the future.
-	// @TODO - add logic for vertical configurations (requires _LinkedGrid::PushBelow)
-	GridNode<MonitorInfo> *pNode = new (std::nothrow) GridNode<MonitorInfo>(info);
-	if(!pNode){ return false; }
+}
 
-	GridNode<MonitorInfo> *pHead = new (std::nothrow) GridNode<MonitorInfo>(info);
-	if(!pHead){ delete pNode; return false; }
-	pHead->MakeHead();
+MonitorInfo *MonitorGrid::Insert(MonitorInfo &&info)
+{
+	// TODO This is an incomplete implementation that only works for
+	// horizontal monitor setups
 
-	// Insert new column with node at appropriate location
-	_GridNode *pPrev = &m_PrimaryDummy;
-	_GridNode *pCurr = m_PrimaryDummy.pNeighbors[EGD_RIGHT];
-	while(!pCurr->IsPrimary() &&
-		((GridNode<MonitorInfo>*)pCurr)->data.screenBounds.left < info.screenBounds.left)
+	// Find column position to insert
+	size_t col = 0;
+	for(col; col < m_Grid.ColumnCount(); ++col)
 	{
-		pPrev = pCurr;
-		pCurr = pCurr->pNeighbors[EGD_RIGHT];
+		auto &curr = m_Grid[col];
+		if(curr.size() == 0) continue;
+
+		if(info.m_ScreenBounds.left < curr[0].m_ScreenBounds.left) break;
 	}
 
-	InsertColumnHead(pHead, pPrev);
-	PushTop(pNode, pHead);
-
-	m_pCurrentNode = !m_pCurrentNode ? pNode : m_pCurrentNode;
-	return true;
-}
-
-const MonitorInfo &MonitorGrid::GetCurrentMonitor() const
-{
-	assert(m_pCurrentNode);
-	return m_pCurrentNode->data;
-}
-
-const MonitorInfo &MonitorGrid::Move(EGridDirection direction)
-{
-	assert(direction >= 0);
-	assert(direction < EGD_COUNT);
-	assert(m_pCurrentNode);
-
-	do
+	// Create column and insert info into grid
+	if(m_Grid.InsertColumn(col))
 	{
-		m_pCurrentNode = (GridNode<MonitorInfo>*)m_pCurrentNode->pNeighbors[direction];
-	} while(m_pCurrentNode->IsHead());
+		if(m_Grid.InsertElement(col, 0, std::move(info)))
+		{
+			if(m_Grid[col][0].m_ScreenBounds.left == 0 && m_Grid[col][0].m_ScreenBounds.top == 0)
+			{
+				m_HasPrimary = true;
+			}
 
-	return GetCurrentMonitor();
+			return &m_Grid[col][0];
+		}
+		else
+		{
+			m_Grid.RemoveColumn(col);
+		}
+	}
+
+	return nullptr;
+}
+
+bool MonitorGrid::Move(EGridDirection direction, bool bWrapAround)
+{
+	return m_Grid.Move(direction, bWrapAround);
+}
+
+size_t MonitorGrid::GetWorkspaceIndex()
+{
+	MonitorInfo *pMon = m_Grid.GetCurrent();
+	if(pMon)
+	{
+		return pMon->m_WorkspaceIndex;
+	}
+	return -1l;
+}
+
+bool MonitorGrid::MoveToWorkspace(size_t workspaceIndex)
+{
+	// Just search the entire grid for now. Not expecting users
+	// to have so many monitors that this will be slow
+	for(size_t col = 0; col < m_Grid.ColumnCount(); ++col)
+	{
+		auto &currCol = m_Grid[col];
+		for(size_t row = 0; row < currCol.size(); ++row)
+		{
+			if(currCol[row].m_WorkspaceIndex == workspaceIndex)
+			{
+				m_Grid.SetColumnIndex(col);
+				m_Grid.SetRowIndex(row);
+				return true;
+			}
+		}
+	}
+
+	return false;
 }
 
 void MonitorGrid::Clear()
 {
-	_LinkedGrid::Clear();
-
-	m_pCurrentNode = nullptr;
+	m_Grid.Clear();
+	m_HasPrimary = false;
 }

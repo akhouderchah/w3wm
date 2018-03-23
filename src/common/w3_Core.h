@@ -40,3 +40,11 @@ enum EGridDirection
 	EGD_LEFT,
 	EGD_COUNT
 };
+
+struct MonitorInfo
+{
+	HMONITOR m_Hmonitor;
+	RECT m_ScreenBounds;
+	float m_DpiScaling;
+	size_t m_WorkspaceIndex;
+};

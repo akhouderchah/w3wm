@@ -8,7 +8,11 @@ w3Context g_Context;
 
 int WINAPI _tWinMain(HINSTANCE hInstance, HINSTANCE, LPTSTR, int nCmdShow)
 {
-	g_Context.Initialize(hInstance);
+	if(!g_Context.Initialize(hInstance))
+	{
+		RELEASE_MESSAGE(_T("Error"), _T("Failed to initialize!"));
+		return 1;
+	}
 
 	MSG msg;
 	while(GetMessage(&msg, NULL, 0, 0))
