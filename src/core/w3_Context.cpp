@@ -292,15 +292,7 @@ bool w3Context::UpdateHotkeys(PTCHAR iniDir)
 
 void w3Context::SetupBlacklist()
 {
-	ADD_BLACKLIST(_T("Shell_TrayWnd"));
-	ADD_BLACKLIST(_T("Progman"));
-	ADD_BLACKLIST(_T("WorkerW"));
-	ADD_BLACKLIST(_T("#32770"));					// Annoying Win10 upgrade prompt
-
-	ADD_BLACKLIST(_T("FencesCustomScrollbar"));
-	ADD_BLACKLIST(_T("VisualStudioGlowWindow"));
-
-	ADD_BLACKLIST_PREFIX(_T("TaskbarWindow"));
+	ADD_BLACKLIST(_T("#32770"));					// Windows message boxes
 }
 
 bool w3Context::AllowWorkstationLock(bool value)
@@ -407,7 +399,13 @@ bool w3Context::UntrackWindow(HWND wnd)
 
 bool w3Context::IsRelevantWindow(HWND hwnd)
 {
-	if(IsWindowVisible(hwnd) && GetParent(hwnd) == 0)
+	long style = GetWindowLong(hwnd, GWL_EXSTYLE);
+	INT16 title;
+	if(IsWindowVisible(hwnd) &&
+		GetParent(hwnd) == NULL &&
+		((GetWindow(hwnd, GW_OWNER) == 0 && !(style & WS_EX_TOOLWINDOW)) ||
+		 (GetWindow(hwnd, GW_OWNER) && (style & WS_EX_TOOLWINDOW))) &&
+		GetWindowText(hwnd, (char*)&title, 2))
 	{
 		TCHAR className[256];
 		int len = GetClassName(hwnd, className, 256);
@@ -450,8 +448,7 @@ BOOL CALLBACK EnumWindowProc_Register(HWND hwnd, LPARAM lParam)
 	static int i = 0;
 	if(((w3Context*)lParam)->IsRelevantWindow(hwnd))
 	{
-		// TODO - Try to determine the proper monitor to put windows in
-		//w3Context::s_Workspaces[w3Context::s_ActiveWorkspace].Insert(hwnd);
+		// Distribute windows roughly evenly between monitors
 		w3Context::s_Workspaces[i++ % w3Context::s_Workspaces.size()].Insert(hwnd);
 	}
 

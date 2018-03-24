@@ -155,12 +155,12 @@ void WindowGrid::Apply()
 	{
 		// Simply display current window at full size
 		float scaling = true ? m_DpiScaling : 1.f; // TODO change true to IsDPIAware
-		::MoveWindow(GetCurrent(),
+		SetWindowPos(GetCurrent(), HWND_TOP,
 			m_MonitorRect.left * scaling,
 			m_MonitorRect.top * scaling,
-			totalWidth * scaling,
-			totalHeight * scaling,
-			true);
+			++totalWidth * scaling,
+			++totalHeight * scaling,
+			0);
 		return;
 	}
 
@@ -188,12 +188,12 @@ void WindowGrid::Apply()
 
 			// Set pos & size of current window
 			float scaling = true ? m_DpiScaling : 1.f; // TODO change true to IsDPIAware
-			::MoveWindow(node.m_Hwnd,
+			SetWindowPos(node.m_Hwnd, HWND_TOPMOST,
 				currentLeft * scaling,
 				currentTop * scaling,
 				(currentRight - currentLeft + 1) * scaling,
 				(currentBottom - currentTop + 1) * scaling,
-				true);
+				0);
 
 			currentTop = currentBottom;
 		}
