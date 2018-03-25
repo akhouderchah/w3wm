@@ -92,7 +92,7 @@ public:
 	/**
 	 * @brief Toggle whether or not the current window is fullscreened
 	 */
-	inline void ToggleFullscreen(){ m_IsFullscreenMode = !m_IsFullscreenMode && m_Grid.ColumnCount(); }
+	void ToggleFullscreen(){ m_IsFullscreenMode = !m_IsFullscreenMode && m_Grid.ColumnCount(); }
 
 	/**
 	 * @brief Return whether or not this grid has any nodes

@@ -64,7 +64,7 @@ public:
 	/**
 	 * @brief Toggle whether the current window is fullscreened
 	 */
-	inline void ToggleFullscreen(){ GetWorkspace().ToggleFullscreen(); GetWorkspace().Apply(); }
+	void ToggleFullscreen();
 
 	/**
 	 * @brief Track window in the proper workspace

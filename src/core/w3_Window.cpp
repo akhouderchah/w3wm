@@ -188,7 +188,7 @@ void WindowGrid::Apply()
 
 			// Set pos & size of current window
 			float scaling = true ? m_DpiScaling : 1.f; // TODO change true to IsDPIAware
-			SetWindowPos(node.m_Hwnd, HWND_TOPMOST,
+			SetWindowPos(node.m_Hwnd, HWND_TOP,
 				currentLeft * scaling,
 				currentTop * scaling,
 				(currentRight - currentLeft + 1) * scaling,
@@ -290,6 +290,9 @@ bool WindowGrid::MoveWindow(EGridDirection direction, bool bWrapAround)
 void WindowGrid::MoveToEdgeFrom(EGridDirection direction)
 {
 	assert(EGD_UP <= direction && direction < EGD_COUNT);
+
+	// Fullscreen workspaces should not change current window
+	if(m_IsFullscreenMode){ return; }
 
 	if(direction & 0x1) // horizontal move
 	{

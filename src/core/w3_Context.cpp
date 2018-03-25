@@ -299,8 +299,8 @@ bool w3Context::AllowWorkstationLock(bool value)
 {
 	// Get registry key for DisableLockWorkstation
 	HKEY hKey;
-	RegOpenKeyEx(HKEY_CURRENT_USER, _T("Software\\Microsoft\\Windows\\CurrentVersion\\Policies\\System"), 0,
-		KEY_ALL_ACCESS, &hKey);
+	RegCreateKeyEx(HKEY_CURRENT_USER, _T("Software\\Microsoft\\Windows\\CurrentVersion\\Policies\\System"), 0,
+		NULL, 0, KEY_ALL_ACCESS, NULL, &hKey, NULL);
 
 	// Set DisableLockWorkstation value
 	DWORD d = !value;
@@ -368,6 +368,14 @@ bool w3Context::CloseWindow()
 		return !!::PostMessage(wnd, WM_CLOSE, 0, 0);
 	}
 	return false;
+}
+
+void w3Context::ToggleFullscreen()
+{
+	WindowGrid &workspace = GetWorkspace();
+	workspace.ToggleFullscreen();
+	workspace.Apply();
+	workspace.FocusCurrent();
 }
 
 bool w3Context::TrackWindow(HWND wnd)
