@@ -291,7 +291,10 @@ bool WindowGrid::MoveWindow(EGridDirection direction, bool bWrapAround)
 
 void WindowGrid::MoveTo(size_t column, size_t row)
 {
-	m_IsFullscreenMode = false;
+	size_t prevColumn = m_Grid.GetColumnIndex();
+	size_t prevRow = m_Grid.GetRowIndex();
+
+	m_IsFullscreenMode = m_IsFullscreenMode && prevColumn == column && prevRow == row;
 
 	m_Grid.SetColumnIndex(column);
 	m_Grid.SetRowIndex(row);
