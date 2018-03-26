@@ -64,6 +64,13 @@ public:
 	bool MoveWindow(EGridDirection direction, bool bWrapAround=true);
 
 	/**
+	 * @brief Set current position to the specified column and row
+	 * @note This function does NOT verify that the column and row indices
+	 *       are valid.
+	 */
+	void MoveTo(size_t column, size_t row);
+
+	/**
 	 * @brief Set current position to grid edge, coming from specified direction
 	 */
 	void MoveToEdgeFrom(EGridDirection direction);
@@ -98,6 +105,8 @@ public:
 	 * @brief Return whether or not this grid has any nodes
 	 */
 	inline bool IsEmpty() const{ return !m_Grid.ColumnCount(); }
+
+	inline static void ShouldClipCursor(bool shouldClip){ s_ShouldClipCursor = shouldClip; }
 private:
 	/**
 	 * @brief Set focus to the specified window
@@ -131,4 +140,6 @@ private:
 	float m_DpiScaling;
 	bool m_IsActive;
 	bool m_IsFullscreenMode; // Is the current window fullscreened?
+
+	static bool s_ShouldClipCursor;
 };

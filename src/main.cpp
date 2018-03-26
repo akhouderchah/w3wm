@@ -98,7 +98,14 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 				}
 				case HSHELL_WINDOWACTIVATED:
 				case HSHELL_RUDEAPPACTIVATED:
+				{
+					HWND wnd = (HWND)lParam;
+					if(g_Context.IsRelevantWindow(wnd))
+					{
+						g_Context.NotifyActivation(wnd);
+					}
 					break;
+				}
 				default:
 					goto ignoreMsg;
 				}

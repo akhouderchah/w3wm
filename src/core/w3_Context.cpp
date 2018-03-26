@@ -25,7 +25,8 @@ size_t w3Context::s_ActiveWorkspace = 0;
 w3Context::w3Context() :
 	m_HUserDLL(NULL),
 	m_ShellMsgID(0),
-	m_IsInitialized(false)
+	m_IsInitialized(false),
+	m_PendingFocus(false)
 {}
 
 bool w3Context::Initialize(HINSTANCE hInstance)
@@ -173,6 +174,7 @@ bool w3Context::MoveFocus(EGridDirection direction, bool bWrapAround)
 
 	InstallHooks(m_Hwnd);
 
+	m_PendingFocus = retVal;
 	return retVal;
 }
 
@@ -511,6 +513,28 @@ bool w3Context::UntrackWindow(HWND wnd)
 
 	GetWorkspace().FocusCurrent();
 	return true;
+}
+
+void w3Context::NotifyActivation(HWND wnd)
+{
+	if(m_PendingFocus)
+	{
+		m_PendingFocus = false;
+		return;
+	}
+
+	WindowCoord coord = FindWindow(wnd);
+	if(coord.IsValid())
+	{
+		if(!s_Monitors.MoveToWorkspace(coord.m_WorkspaceIndex))
+		{
+			DEBUG_MESSAGE(_T("Error"), _T("MonitorGrid failed to find the active workspace!"));
+			return;
+		}
+
+		s_ActiveWorkspace = coord.m_WorkspaceIndex;
+		GetWorkspace().MoveTo(coord.m_Column, coord.m_Row);
+	}
 }
 
 bool w3Context::IsRelevantWindow(HWND hwnd)

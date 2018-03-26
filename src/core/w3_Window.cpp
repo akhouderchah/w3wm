@@ -1,6 +1,8 @@
 #include "w3_Window.h"
 #include <memory>
 
+bool WindowGrid::s_ShouldClipCursor = false;
+
 WindowGrid::WindowGrid() :
 	m_DefaultWidthWeight(1), m_TotalWidthWeight(0),
 	m_IsActive(false), m_IsFullscreenMode(false)
@@ -287,6 +289,14 @@ bool WindowGrid::MoveWindow(EGridDirection direction, bool bWrapAround)
 	return bChanged;
 }
 
+void WindowGrid::MoveTo(size_t column, size_t row)
+{
+	m_IsFullscreenMode = false;
+
+	m_Grid.SetColumnIndex(column);
+	m_Grid.SetRowIndex(row);
+}
+
 void WindowGrid::MoveToEdgeFrom(EGridDirection direction)
 {
 	assert(EGD_UP <= direction && direction < EGD_COUNT);
@@ -349,7 +359,10 @@ bool WindowGrid::FocusWindow(HWND hwnd)
 
 	// Clip cursor to within bounds of window
 	SetCursorPos(r.left + (r.right-r.left)/2, r.top + (r.bottom-r.top)/2);
-	ClipCursor(&r);
+	if(s_ShouldClipCursor)
+	{
+		ClipCursor(&r);
+	}
 
 	return true;
 }

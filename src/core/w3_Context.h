@@ -84,6 +84,17 @@ public:
 	bool UntrackWindow(HWND wnd);
 
 	/**
+	 * @brief Notifies w3wm about a window activation
+	 *
+	 * In the case that this activation was brought about by a focus by
+	 * w3wm, the PendingFocus flag will simply be unset. If this activation
+	 * was brought about by the user manually clicking on a window, this will
+	 * update the internal data structures so that the current window is the
+	 * wnd (if wnd is a relevant window).
+	 */
+	void NotifyActivation(HWND wnd);
+
+	/**
 	 * @brief Return whether or not w3wm should track the given window
 	 */
 	bool IsRelevantWindow(HWND hwnd);
@@ -154,8 +165,10 @@ private:
 
 	UINT m_ShellMsgID;
 
+	// TODO make into bitflag
 	bool m_IsInitialized;
 	bool m_InitialLockEnabled;
+	bool m_PendingFocus; // did w3wm make a focus that hasn't yet been notified
 
 	TCHAR m_CmdPath[256];
 
