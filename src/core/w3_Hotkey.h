@@ -27,6 +27,7 @@ void ParseHotkey(HotkeyDef *pHotkey, LPCTSTR str);
 	f(WND_RIGHT, 'L', EM_WIN | EM_SHIFT) \
 	f(WND_DOWN, 'J', EM_WIN | EM_SHIFT) \
 	f(WND_LEFT, 'H', EM_WIN | EM_SHIFT) \
+	f(WND_OPEN, 'N', EM_WIN) \
 	f(WND_CLOSE, 'D', EM_WIN) \
 	f(WND_FULLSCREEN, 'F', EM_WIN) \
 	f(FOCUS_UP, 'K', EM_WIN) \

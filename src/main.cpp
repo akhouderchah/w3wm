@@ -37,6 +37,9 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		case WM_HOTKEY:
 			switch(lParam)
 			{
+				case EH_WND_OPEN:
+					g_Context.OpenWindow(_T("notepad"));
+					break;
 				case EH_WND_CLOSE:
 					g_Context.CloseWindow();
 					break;

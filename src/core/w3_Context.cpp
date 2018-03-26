@@ -3,6 +3,7 @@
 #include "w3_DLL.h"
 
 #include <windows.h>
+#include <sddl.h>
 #include "Shlwapi.h"
 #include <vector>
 
@@ -29,6 +30,9 @@ w3Context::w3Context() :
 
 bool w3Context::Initialize(HINSTANCE hInstance)
 {
+	if(m_IsInitialized){ return Start(); }
+
+	// Create w3 window with null style
 	WNDCLASSEX wc;
 	wc.cbSize = sizeof(WNDCLASSEX);
 	wc.style = 0;
@@ -63,6 +67,7 @@ bool w3Context::Initialize(HINSTANCE hInstance)
 		return false;
 	}
 
+	// Setup window to get shell messages
 	BOOL (__stdcall *RegisterShellHookWindowFunc)(HWND) =
 		(BOOL (__stdcall *)(HWND))GetProcAddress(m_HUserDLL, "RegisterShellHookWindow");
 	if(!RegisterShellHookWindowFunc)
@@ -79,16 +84,27 @@ bool w3Context::Initialize(HINSTANCE hInstance)
 		return false;
 	}
 
+	// Inject 32-bit DLL
 	InstallHooks(m_Hwnd);
 
 	// Read whether or not the workstation can lock at startup
 	m_InitialLockEnabled = CanWorkstationLock();
 
+	// Setup user token
+	if(!SetupTokens())
+	{
+		RELEASE_MESSAGE(_T("Error"), _T("Failed to get the user tokens"));
+		return false;
+	}
+
+	m_IsInitialized = true;
 	return Start();
 }
 
 void w3Context::Shutdown()
 {
+	if(!m_IsInitialized){ return; }
+
 	// Un-clip cursor
 	ClipCursor(0);
 
@@ -97,6 +113,11 @@ void w3Context::Shutdown()
 
 	// Set the original workstation lock enable/disable value
 	AllowWorkstationLock(m_InitialLockEnabled);
+
+	// Close security tokens
+	CloseHandle(m_LowIntegrityToken);
+
+	m_IsInitialized = false;
 }
 
 bool w3Context::Restart()
@@ -292,7 +313,58 @@ bool w3Context::UpdateHotkeys(PTCHAR iniDir)
 
 void w3Context::SetupBlacklist()
 {
-	ADD_BLACKLIST(_T("#32770"));					// Windows message boxes
+	//ADD_BLACKLIST(_T("#32770"));					// Windows message boxes
+}
+
+bool w3Context::SetupTokens()
+{
+	HANDLE currToken, baseToken;
+
+	// Get current process token
+	if(!OpenProcessToken(GetCurrentProcess(),
+		TOKEN_DUPLICATE | TOKEN_ADJUST_DEFAULT | TOKEN_QUERY |TOKEN_ASSIGN_PRIMARY,
+		&currToken))
+	{
+		return false;
+	}
+
+	// Duplicate with fixed integrity level
+	if(!DuplicateTokenEx(currToken, 0, NULL, SecurityImpersonation,
+		TokenPrimary, &baseToken))
+	{
+		CloseHandle(currToken);
+		return false;
+	}
+
+	// Set duplicate to low integrity level
+	const char *strSID = "S-1-16-4096";
+	PSID psid = NULL;
+	if(!ConvertStringSidToSidA(strSID, &psid))
+	{
+		CloseHandle(currToken);
+		CloseHandle(baseToken);
+		return false;
+	}
+
+	TOKEN_MANDATORY_LABEL tml;
+	ZeroMemory(&tml, sizeof(tml));
+	tml.Label.Attributes = SE_GROUP_INTEGRITY;
+	tml.Label.Sid = psid;
+
+	if(!SetTokenInformation(baseToken, TokenIntegrityLevel, &tml,
+		sizeof(tml) + GetLengthSid(psid)))
+	{
+		LocalFree(psid);
+		CloseHandle(currToken);
+		CloseHandle(baseToken);
+		return false;
+	}
+
+	// Save duplicated token and clean up
+	m_LowIntegrityToken = baseToken;
+	LocalFree(psid);
+	CloseHandle(currToken);
+	return true;
 }
 
 bool w3Context::AllowWorkstationLock(bool value)
@@ -353,6 +425,42 @@ BOOL CALLBACK MonitorProc(HMONITOR hMonitor, HDC hdcMonitor, LPRECT lprcMonitor,
 	}
 
 	return TRUE;
+}
+
+bool w3Context::OpenWindow(LPCSTR filename)
+{
+	// Attempt to find the program
+	TCHAR pathBuf[512];
+
+	PVOID oldValue = NULL;
+	Wow64DisableWow64FsRedirection(&oldValue);
+
+	DWORD len = SearchPath(NULL, filename, _T(".exe"), 512, pathBuf, NULL);
+	if(!len)
+	{
+		RELEASE_MESSAGE(_T("Fu"), _T("Couldn't find %s"), filename);
+		return false;
+	}
+	Wow64RevertWow64FsRedirection(oldValue);
+	DEBUG_MESSAGE(_T("Info"), _T("Opening %s"), pathBuf);
+
+	// Run program with low integrity
+	// TODO LoadUserProfile might be needed when HKEY_CURRENT_USER registry entries
+	//      are used by the spawned process
+	PROCESS_INFORMATION pi;
+	STARTUPINFO si;
+	ZeroMemory(&si, sizeof(si));
+	si.cb = sizeof(si);
+
+	if(!CreateProcessAsUser(m_LowIntegrityToken, pathBuf, NULL, NULL,
+		NULL, FALSE, 0, NULL, NULL, &si, &pi))
+	{
+		return false;
+	}
+
+	CloseHandle(pi.hThread);
+	CloseHandle(pi.hProcess);
+	return true;
 }
 
 bool w3Context::CloseWindow()

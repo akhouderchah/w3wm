@@ -5,7 +5,7 @@
 
 /* w3 Version */
 #define W3_VERSION_MAJOR 0
-#define W3_VERSION_MINOR 1
+#define W3_VERSION_MINOR 2
 
  /* w3 Names */
 #define T_WNDCLASS_NAME _T("w3wm_class")

@@ -56,6 +56,11 @@ public:
 	bool MoveWindow(EGridDirection direction, bool bWrapAround=true);
 
 	/**
+	 * @brief Attempts to start the specified program
+	 */
+	bool OpenWindow(LPCTSTR filename);
+
+	/**
 	 * @brief Close the current window
 	 * @return true if a window was closed, false otherwise
 	 */
@@ -98,8 +103,15 @@ private:
 	void SetupBlacklist();
 
 	/**
+	 * @brief Create user tokens for opening new applications
+	 * @note This currently only creates a low integrity level token.
+	 *       In the future, additional tokens may be created for running
+	 *       applications as administrator, etc.
+	 */
+	bool SetupTokens();
+
+	/**
 	 * @brief Enable/disable workstation locking
-	 *
 	 * @note For this method to succeed, w3wm must be run with
 	 *       administrator privileges. Otherwise, either Win+L
 	 *       will cause workstation locks, or workstation locking
@@ -138,6 +150,7 @@ private:
 private:
 	HWND m_Hwnd;
 	HMODULE m_HUserDLL;
+	HANDLE m_LowIntegrityToken;
 
 	UINT m_ShellMsgID;
 

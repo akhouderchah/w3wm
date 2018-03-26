@@ -1,0 +1,9 @@
+Changes for v0.2:
+    * Ability to start applications with a low security integrity
+
+Changes for v0.1:
+    * Window & monitor tracking
+    * Support for horizontal multi-monitor setups
+    * Window focusing, moving, and closing
+    * Workspace fullscreening
+    * Basic config file options
