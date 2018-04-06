@@ -7,6 +7,8 @@
 #include "Shlwapi.h"
 #include <vector>
 
+using IsWow64Process_t = BOOL (WINAPI *)(HANDLE, PBOOL);
+
 extern LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 BOOL CALLBACK MonitorProc(HMONITOR hMonitor, HDC hdcMonitor, LPRECT lprcMonitor, LPARAM dwData);
 BOOL CALLBACK EnumWindowProc_Register(HWND hwnd, LPARAM lParam);
@@ -25,6 +27,9 @@ size_t w3Context::s_ActiveWorkspace = 0;
 w3Context::w3Context() :
 	m_HUserDLL(NULL),
 	m_ShellMsgID(0),
+	m_hStub_InRead(0), m_hStub_InWrite(0),
+	m_hStub_OutRead(0), m_hStub_OutWrite(0),
+	m_hStubWnd(0),
 	m_IsInitialized(false),
 	m_PendingFocus(false)
 {}
@@ -54,7 +59,7 @@ bool w3Context::Initialize(HINSTANCE hInstance)
 		return false;
 	}
 
-	m_Hwnd = CreateWindowEx(0, T_WNDCLASS_NAME, T_APP_NAME, 0, 0, 0, 0, 0, HWND_MESSAGE, NULL, hInstance, NULL);
+	m_Hwnd = CreateWindowEx(0, T_WNDCLASS_NAME, T_APP_NAME, 0, 0, 0, 0, 0, NULL, NULL, hInstance, NULL);
 	if(!m_Hwnd)
 	{
 		MessageBoxEx(NULL, _T("w3wm failed to create the window"), T_ERROR_TITLE, MB_OK | MB_ICONERROR, 0);
@@ -85,18 +90,57 @@ bool w3Context::Initialize(HINSTANCE hInstance)
 		return false;
 	}
 
-	// Inject 32-bit DLL
-	InstallHooks(m_Hwnd);
-
-	// Read whether or not the workstation can lock at startup
-	m_InitialLockEnabled = CanWorkstationLock();
-
 	// Setup user token
 	if(!SetupTokens())
 	{
 		RELEASE_MESSAGE(_T("Error"), _T("Failed to get the user tokens"));
 		return false;
 	}
+
+	// Inject 32-bit DLL
+	InstallHooks(m_Hwnd);
+
+	// Inject 64-bit DLL if we are on 64-bit windows
+	HMODULE hKernel32 = GetModuleHandle(_T("kernel32"));
+	if(!hKernel32)
+	{
+		RELEASE_MESSAGE("Error", "Failed to get Kernel32.dll");
+		return false;
+	}
+
+	IsWow64Process_t fnIsWow64Process = (IsWow64Process_t)GetProcAddress(hKernel32, "IsWow64Process");
+	if(!fnIsWow64Process)
+	{
+		RELEASE_MESSAGE("Error", "Failed to get IsWow64Process from Kernel32.DLL.");
+		return false;
+	}
+
+	BOOL isSystem64Bit = FALSE;
+	fnIsWow64Process(GetCurrentProcess(), &isSystem64Bit);
+	if(isSystem64Bit)
+	{
+		if(!Execute64Bit())
+		{
+			RELEASE_MESSAGE("Warning", "Failed to start 64-bit stub.\n"
+				"w3wm may not behave as expected with all windows");
+		}
+		else
+		{
+			// Wait to get HWND from the stub
+			unsigned long h;
+			DWORD readSize;
+			if(!ReadFile(m_hStub_OutRead, &h, sizeof(h), &readSize, NULL) || h == 0)
+			{
+				RELEASE_MESSAGE("Error", "Failed to get the window handle from the stub.");
+				return false;
+			}
+
+			m_hStubWnd = (HWND)h;
+		}
+	}
+
+	// Read whether or not the workstation can lock at startup
+	m_InitialLockEnabled = CanWorkstationLock();
 
 	m_IsInitialized = true;
 	return Start();
@@ -109,14 +153,25 @@ void w3Context::Shutdown()
 	// Un-clip cursor
 	ClipCursor(0);
 
+	// Close security tokens
+	CloseHandle(m_LowIntegrityToken);
+
+	// Shut down stub if it exists, and close pipe handles
+	if(m_hStubWnd)
+	{
+		CloseHandle(m_hStub_InRead);
+		CloseHandle(m_hStub_InWrite);
+		CloseHandle(m_hStub_OutRead);
+		CloseHandle(m_hStub_OutWrite);
+		PostMessage(m_hStubWnd, WM_DESTROY, 0, 0);
+		m_hStubWnd = 0;
+	}
+
 	// Remove the injected DLL
 	RemoveHooks();
 
 	// Set the original workstation lock enable/disable value
 	AllowWorkstationLock(m_InitialLockEnabled);
-
-	// Close security tokens
-	CloseHandle(m_LowIntegrityToken);
 
 	m_IsInitialized = false;
 }
@@ -293,17 +348,19 @@ bool w3Context::UpdateHotkeys(PTCHAR iniDir)
 	if(!PathFileExists(iniDir))
 	{
 		max = 0;
-		MessageBoxEx(NULL, iniDir, _T("Ini not found"), MB_OK, 0);
+		DEBUG_MESSAGE("Warning", "Ini not found - using default properties");
 	}
-
-	for(int i = 0; i < max; ++i)
+	else
 	{
-		TCHAR inBuf[80];
-		DWORD res = GetPrivateProfileString(_T("Keybindings"), names[i], _T(""), inBuf, 80, iniDir);
-
-		if(res != 0)
+		for(int i = 0; i < max; ++i)
 		{
-			ParseHotkey(&defs[i], inBuf);
+			TCHAR inBuf[80];
+			DWORD res = GetPrivateProfileString(_T("Keybindings"), names[i], _T(""), inBuf, 80, iniDir);
+
+			if(res != 0)
+			{
+				ParseHotkey(&defs[i], inBuf);
+			}
 		}
 	}
 
@@ -311,6 +368,71 @@ bool w3Context::UpdateHotkeys(PTCHAR iniDir)
 	SetHotkeys(defs, ARR_SIZE(defs));
 
 	return (max != 0);
+}
+
+bool w3Context::Execute64Bit()
+{
+	// Pass PID over command line
+	CString cmdLine;
+	cmdLine.Format(_T("w3_stub.exe %u"), m_Hwnd);
+
+	//// Create STDOUT and STDIN pipes
+	// Allow pipes to be inherited by stub
+	SECURITY_ATTRIBUTES sa;
+	sa.nLength = sizeof(SECURITY_ATTRIBUTES);
+	sa.bInheritHandle = TRUE;
+	sa.lpSecurityDescriptor = NULL;
+
+	// Create STDOUT pipes and only make the write pipe inheritable
+	if(!CreatePipe(&m_hStub_OutRead, &m_hStub_OutWrite, &sa, 0))
+	{
+		return false;
+	}
+	else if(!SetHandleInformation(m_hStub_OutRead, HANDLE_FLAG_INHERIT, 0))
+	{
+		CloseHandle(m_hStub_OutRead);
+		CloseHandle(m_hStub_OutRead);
+		return false;
+	}
+
+	// Create STDIN pipes and only make the read pipe inheritable
+	if(!CreatePipe(&m_hStub_InRead, &m_hStub_InWrite, &sa, 0))
+	{
+		CloseHandle(m_hStub_OutRead);
+		CloseHandle(m_hStub_OutWrite);
+		return false;
+	}
+	else if(!SetHandleInformation(m_hStub_InWrite, HANDLE_FLAG_INHERIT, 0))
+	{
+		CloseHandle(m_hStub_OutRead);
+		CloseHandle(m_hStub_OutWrite);
+		CloseHandle(m_hStub_InRead);
+		CloseHandle(m_hStub_InWrite);
+		return false;
+	}
+
+	PROCESS_INFORMATION procInfo;
+	ZeroMemory(&procInfo, sizeof(PROCESS_INFORMATION));
+
+	STARTUPINFO startupInfo;
+	ZeroMemory(&startupInfo, sizeof(STARTUPINFO));
+	startupInfo.cb = sizeof(STARTUPINFO);
+	startupInfo.hStdError = m_hStub_OutWrite;
+	startupInfo.hStdOutput = m_hStub_OutWrite;
+	startupInfo.hStdInput = m_hStub_InRead;
+	startupInfo.dwFlags |= STARTF_USESTDHANDLES;
+
+	// Create the child process
+	BOOL bSuccess = CreateProcess(NULL, (LPSTR)cmdLine.GetString(),
+		NULL, NULL, TRUE, 0, NULL, NULL, &startupInfo, &procInfo);
+	if(!bSuccess)
+	{
+		return false;
+	}
+
+	CloseHandle(procInfo.hProcess);
+	CloseHandle(procInfo.hThread);
+	return true;
 }
 
 void w3Context::SetupBlacklist()

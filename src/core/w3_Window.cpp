@@ -194,7 +194,7 @@ void WindowGrid::Apply()
 				currentLeft * scaling,
 				currentTop * scaling,
 				(currentRight - currentLeft + 1) * scaling,
-				(currentBottom - currentTop + 1) * scaling,
+				(currentBottom - currentTop - 5) * scaling,
 				0);
 
 			currentTop = currentBottom;
@@ -350,7 +350,7 @@ bool WindowGrid::FocusWindow(HWND hwnd)
 	// to it by the grid. If this is the case, then those windows may cover
 	// up the top-left corners of windows to their right
 	ClipCursor(0);
-	SetCursorPos(r.left+10, r.top+1);
+	SetCursorPos(r.left+10, r.top+4);
 
 	INPUT click = {0};
 	click.type = INPUT_MOUSE;

@@ -75,7 +75,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			}
 			break;
 		default:
-			if(message == g_Context.GetShellMsgID())
+			if(message == g_Context.GetShellMsgID() && g_Context.IsInitialized())
 			{
 				switch(wParam)
 				{

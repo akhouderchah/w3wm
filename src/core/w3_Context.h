@@ -100,6 +100,11 @@ public:
 	bool IsRelevantWindow(HWND hwnd);
 
 	/**
+	 * @brief Returns whether or not w3wm has been initialized
+	 */
+	inline bool IsInitialized() const{ return m_IsInitialized; }
+
+	/**
 	 * @brief Return the msg ID for HSHELL_* messages
 	 */
 	inline UINT GetShellMsgID() const{ return m_ShellMsgID; }
@@ -107,6 +112,11 @@ public:
 private:
 	bool Start();
 	bool UpdateHotkeys(PTCHAR iniDir);
+
+	/**
+	 * @brief Start the 64-bit stub
+	 */
+	bool Execute64Bit();
 
 	/**
 	 * @brief Initialize the window class blacklist
@@ -164,6 +174,13 @@ private:
 	HANDLE m_LowIntegrityToken;
 
 	UINT m_ShellMsgID;
+
+	// Pipe handles for communication with stub process
+	HANDLE m_hStub_InRead;
+	HANDLE m_hStub_InWrite;
+	HANDLE m_hStub_OutRead;
+	HANDLE m_hStub_OutWrite;
+	HWND m_hStubWnd;
 
 	// TODO make into bitflag
 	bool m_IsInitialized;
