@@ -114,6 +114,20 @@ private:
 	bool UpdateHotkeys(PTCHAR iniDir);
 
 	/**
+	 * @brief Perform DLL injection
+	 * @note On 64-bit machines, this also takes care of signaling the
+	 *       stub to perform injection.
+	 */
+	void InjectDLL();
+
+	/**
+	 * @brief Remove injected DLL
+	 * @note On 64-bit machines, this also takes care of signaling the
+	 *       stub to perform injection.
+	 */
+	void WithdrawDLL();
+
+	/**
 	 * @brief Start the 64-bit stub
 	 */
 	bool Execute64Bit();

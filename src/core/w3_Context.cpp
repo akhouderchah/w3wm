@@ -97,10 +97,7 @@ bool w3Context::Initialize(HINSTANCE hInstance)
 		return false;
 	}
 
-	// Inject 32-bit DLL
-	InstallHooks(m_Hwnd);
-
-	// Inject 64-bit DLL if we are on 64-bit windows
+	// Spawn 64-bit stub process if we are on 64-bit windows
 	HMODULE hKernel32 = GetModuleHandle(_T("kernel32"));
 	if(!hKernel32)
 	{
@@ -129,7 +126,8 @@ bool w3Context::Initialize(HINSTANCE hInstance)
 			// Wait to get HWND from the stub
 			unsigned long h;
 			DWORD readSize;
-			if(!ReadFile(m_hStub_OutRead, &h, sizeof(h), &readSize, NULL) || h == 0)
+			if(!ReadFile(m_hStub_OutRead, &h, sizeof(h), &readSize, NULL) ||
+				readSize != sizeof(h) || h == 0)
 			{
 				RELEASE_MESSAGE("Error", "Failed to get the window handle from the stub.");
 				return false;
@@ -138,6 +136,9 @@ bool w3Context::Initialize(HINSTANCE hInstance)
 			m_hStubWnd = (HWND)h;
 		}
 	}
+
+	// Inject DLL
+	InjectDLL();
 
 	// Read whether or not the workstation can lock at startup
 	m_InitialLockEnabled = CanWorkstationLock();
@@ -168,7 +169,7 @@ void w3Context::Shutdown()
 	}
 
 	// Remove the injected DLL
-	RemoveHooks();
+	WithdrawDLL();
 
 	// Set the original workstation lock enable/disable value
 	AllowWorkstationLock(m_InitialLockEnabled);
@@ -204,7 +205,7 @@ bool w3Context::MoveFocus(EGridDirection direction, bool bWrapAround)
 	AllowWorkstationLock(false);
 
 	// Remove and re-install hooks so that key callback is at the top of the chain
-	RemoveHooks();
+	WithdrawDLL();
 	bool retVal = GetWorkspace().MoveFocus(direction, false);
 
 	// If window is at edge, try to move monitors
@@ -227,7 +228,7 @@ bool w3Context::MoveFocus(EGridDirection direction, bool bWrapAround)
 		}
 	}
 
-	InstallHooks(m_Hwnd);
+	InjectDLL();
 
 	m_PendingFocus = retVal;
 	return retVal;
@@ -238,7 +239,7 @@ bool w3Context::MoveWindow(EGridDirection direction, bool bWrapAround)
 	AllowWorkstationLock(false);
 
 	// Remove and re-install hooks so that key callback is at the top of the chain
-	RemoveHooks();
+	WithdrawDLL();
 	bool retVal = GetWorkspace().MoveWindow(direction, false);
 
 	// If window is at edge, try to move monitors
@@ -268,7 +269,7 @@ bool w3Context::MoveWindow(EGridDirection direction, bool bWrapAround)
 			retVal = GetWorkspace().MoveWindow(direction, bWrapAround);
 		}
 	}
-	InstallHooks(m_Hwnd);
+	InjectDLL();
 
 	GetWorkspace().FocusCurrent();
 
@@ -364,10 +365,69 @@ bool w3Context::UpdateHotkeys(PTCHAR iniDir)
 		}
 	}
 
-	// Inform DLL of hotkey mappings
+	// Inform 32-bit DLL of hotkey mappings
 	SetHotkeys(defs, ARR_SIZE(defs));
 
+	// If it exists, send hotkey mappings to 64-bit stub
+	if(m_hStubWnd)
+	{
+		// Send size of defs array
+		DWORD bytesWritten;
+		DWORD defsSize = sizeof(defs);
+		DWORD hotkeySize = sizeof(HotkeyDef);
+		if(!WriteFile(m_hStub_InWrite, &defsSize, sizeof(DWORD), &bytesWritten, NULL) ||
+			bytesWritten != sizeof(DWORD))
+		{
+			RELEASE_MESSAGE("Warning", "Failed to update 64-bit stub hotkey mappings");
+		}
+		// Send HotkeyDef size
+		else if(!WriteFile(m_hStub_InWrite, &hotkeySize, sizeof(DWORD), &bytesWritten, NULL) ||
+			bytesWritten != sizeof(DWORD))
+		{
+
+			RELEASE_MESSAGE("Warning", "Failed to update 64-bit stub hotkey mappings");
+		}
+		// Send defs array
+		else if(!WriteFile(m_hStub_InWrite, defs, sizeof(defs), &bytesWritten, NULL) ||
+			bytesWritten != sizeof(defs))
+		{
+			RELEASE_MESSAGE("Warning", "Failed to update 64-bit stub hotkey mappings");
+		}
+		// Send update hotkey message
+		else
+		{
+			if(!PostMessage(m_hStubWnd, ESM_UPDATE_HOTKEYS, WM_STUBCOMM, 0))
+			{
+				RELEASE_MESSAGE("Warning", "Failed to send 64-bit stub the update hokey message.");
+			}
+		}
+	}
+
 	return (max != 0);
+}
+
+void w3Context::InjectDLL()
+{
+	// Always perform 32-bit injection
+	InstallHooks(m_Hwnd);
+
+	if(m_hStubWnd)
+	{
+		// Send inject message to stub
+		PostMessage(m_hStubWnd, WM_STUBCOMM, ESM_INJECT_DLL, 0);
+	}
+}
+
+void w3Context::WithdrawDLL()
+{
+	// Always remove 32-bit DLL
+	RemoveHooks();
+
+	if(m_hStubWnd)
+	{
+		// Send withdraw message to stub
+		PostMessage(m_hStubWnd, WM_STUBCOMM, ESM_WITHDRAW_DLL, 0);
+	}
 }
 
 bool w3Context::Execute64Bit()

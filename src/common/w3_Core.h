@@ -13,6 +13,25 @@
 
 #define T_ERROR_TITLE _T("w3wm Error")
 
+/* w3 Constants */
+#define WM_STUBCOMM WM_USER+10
+
+enum StubMessages
+{
+	ESM_INJECT_DLL = 1,
+	ESM_WITHDRAW_DLL,
+	ESM_UPDATE_HOTKEYS,
+};
+
+enum EGridDirection
+{
+	EGD_UP,
+	EGD_RIGHT,
+	EGD_DOWN,
+	EGD_LEFT,
+	EGD_COUNT
+};
+
 /* w3 Macros */
 #define ARR_SIZE(arr) sizeof(arr)/sizeof(arr[0])
 
@@ -31,15 +50,6 @@
 #define DEBUG_MESSAGE(msgTitle, format, ...)					\
 	RELEASE_MESSAGE(msgTitle, format, __VA_ARGS__);
 #endif
-
-enum EGridDirection
-{
-	EGD_UP,
-	EGD_RIGHT,
-	EGD_DOWN,
-	EGD_LEFT,
-	EGD_COUNT
-};
 
 struct MonitorInfo
 {
