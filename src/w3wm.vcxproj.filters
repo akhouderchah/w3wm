@@ -64,10 +64,17 @@
     <ClInclude Include="common\w3_VectorGrid.h">
       <Filter>common\Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="resource.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="common\w3_VectorGrid.inl">
       <Filter>common\Source Files</Filter>
     </None>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="w3wm.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="w3.ico" />
   </ItemGroup>
 </Project>

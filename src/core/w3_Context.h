@@ -189,6 +189,9 @@ private:
 
 	UINT m_ShellMsgID;
 
+	// Notification icon data
+	NOTIFYICONDATA m_IconData;
+
 	// Pipe handles for communication with stub process
 	HANDLE m_hStub_InRead;
 	HANDLE m_hStub_InWrite;

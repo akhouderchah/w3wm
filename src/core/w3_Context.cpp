@@ -1,6 +1,7 @@
 #include "w3_Context.h"
 #include "w3_Core.h"
 #include "w3_DLL.h"
+#include "resource.h"
 
 #include <windows.h>
 #include <sddl.h>
@@ -143,6 +144,21 @@ bool w3Context::Initialize(HINSTANCE hInstance)
 	// Read whether or not the workstation can lock at startup
 	m_InitialLockEnabled = CanWorkstationLock();
 
+	// Add icon to notification area
+	m_IconData.cbSize = sizeof(NOTIFYICONDATA);
+	m_IconData.hIcon = LoadIcon(hInstance, MAKEINTRESOURCE(IDI_ICON1));
+	m_IconData.uCallbackMessage = WM_USER + 1;
+	m_IconData.hWnd = m_Hwnd;
+	m_IconData.uID = WM_USER + 2;
+	m_IconData.uVersion = NOTIFYICON_VERSION;
+	m_IconData.uFlags = NIF_ICON | NIF_MESSAGE | NIF_TIP | NIF_SHOWTIP;
+	_tcscpy_s(m_IconData.szTip, _T("w3wm"));
+
+	if(!Shell_NotifyIcon(NIM_ADD, &m_IconData) || !Shell_NotifyIcon(NIM_SETVERSION, &m_IconData))
+	{
+		RELEASE_MESSAGE("Warning", "Failed to add icon to notification area.");
+	}
+
 	m_IsInitialized = true;
 	return Start();
 }
@@ -173,6 +189,9 @@ void w3Context::Shutdown()
 
 	// Set the original workstation lock enable/disable value
 	AllowWorkstationLock(m_InitialLockEnabled);
+
+	// Remove notification icon
+	Shell_NotifyIcon(NIM_DELETE, &m_IconData);
 
 	m_IsInitialized = false;
 }
