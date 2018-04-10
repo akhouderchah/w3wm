@@ -74,6 +74,43 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 					goto ignoreMsg;
 			}
 			break;
+		case WM_ICON_CALLBACK:
+			switch(lParam)
+			{
+				case WM_RBUTTONDOWN:
+				{
+					// Create menu
+					HMENU popMenu = CreatePopupMenu();
+					AppendMenu(popMenu, MF_STRING, ID_MENU_EXIT, "Exit");
+
+					// Track menu
+					POINT pCursor;
+					GetCursorPos(&pCursor);
+					SetForegroundWindow(hWnd);
+					TrackPopupMenu(popMenu, TPM_LEFTBUTTON | TPM_RIGHTALIGN, pCursor.x, pCursor.y,
+						0, hWnd, NULL);
+
+					break;
+				}
+				default:
+					goto ignoreMsg;
+			}
+			break;
+		case WM_COMMAND:
+		{
+			WORD id = LOWORD(wParam);
+			WORD event = HIWORD(wParam);
+
+			switch(id)
+			{
+			case ID_MENU_EXIT:
+				PostMessage(hWnd, WM_DESTROY, 0, 0);
+				break;
+			default:
+				goto ignoreMsg;
+			}
+			break;
+		}
 		default:
 			if(message == g_Context.GetShellMsgID() && g_Context.IsInitialized())
 			{

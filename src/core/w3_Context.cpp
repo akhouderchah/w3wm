@@ -147,7 +147,7 @@ bool w3Context::Initialize(HINSTANCE hInstance)
 	// Add icon to notification area
 	m_IconData.cbSize = sizeof(NOTIFYICONDATA);
 	m_IconData.hIcon = LoadIcon(hInstance, MAKEINTRESOURCE(IDI_ICON1));
-	m_IconData.uCallbackMessage = WM_USER + 1;
+	m_IconData.uCallbackMessage = WM_ICON_CALLBACK;
 	m_IconData.hWnd = m_Hwnd;
 	m_IconData.uID = WM_USER + 2;
 	m_IconData.uVersion = NOTIFYICON_VERSION;

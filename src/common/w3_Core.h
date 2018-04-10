@@ -14,7 +14,10 @@
 #define T_ERROR_TITLE _T("w3wm Error")
 
 /* w3 Constants */
+#define WM_ICON_CALLBACK WM_USER+1
 #define WM_STUBCOMM WM_USER+10
+
+#define ID_MENU_EXIT 1
 
 enum StubMessages
 {
