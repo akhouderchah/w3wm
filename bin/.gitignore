@@ -1,0 +1,6 @@
+Win32_*
+x64_*
+Release/*.pdb
+Release/test.exe
+Release/*.exp
+Release/*.lib
