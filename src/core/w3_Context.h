@@ -5,6 +5,7 @@
 #include "w3_Window.h"
 
 #include <unordered_set>
+#include <unordered_map>
 
 /**
  * @brief The top-level class for w3wm
@@ -100,9 +101,9 @@ public:
 	bool IsRelevantWindow(HWND hwnd);
 
 	/**
-	 * @brief Returns whether or not w3wm has been initialized
+	 * @brief Returns whether or not w3wm has been properly started
 	 */
-	inline bool IsInitialized() const{ return m_IsInitialized; }
+	inline bool IsReady() const{ return m_IsReady; }
 
 	/**
 	 * @brief Return the msg ID for HSHELL_* messages
@@ -111,7 +112,13 @@ public:
 
 private:
 	bool Start();
-	bool UpdateHotkeys(PTCHAR iniDir);
+	bool UpdateHotkeys(TCHAR *iniDir);
+
+	using VirtualKeyMap = std::unordered_map<std::string, UINT8>;
+	/**
+	 * @brief Set pHotkey based on passed in string
+	 */
+	void ParseHotkey(LPTSTR str, const VirtualKeyMap &keyMap, struct HotkeyDef *pHotkey) const;
 
 	/**
 	 * @brief Perform DLL injection
@@ -201,6 +208,7 @@ private:
 
 	// TODO make into bitflag
 	bool m_IsInitialized;
+	bool m_IsReady;
 	bool m_InitialLockEnabled;
 	bool m_PendingFocus; // did w3wm make a focus that hasn't yet been notified
 

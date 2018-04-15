@@ -12,16 +12,17 @@ enum EModifiers
 	EM_SHIFT = 0x08
 };
 
-typedef struct
+struct HotkeyDef
 {
 	UINT16 m_HotkeyID;
 
 	UINT8 m_MainKey;
 	UINT8 m_Modifiers;
-} HotkeyDef;
+};
 
-void ParseHotkey(HotkeyDef *pHotkey, LPCTSTR str);
-
+/**
+ * Hotkey Definitions
+ */
 #define HOTKEYS(f) \
 	f(WND_UP, 'K', EM_WIN | EM_SHIFT) \
 	f(WND_RIGHT, 'L', EM_WIN | EM_SHIFT) \
@@ -60,3 +61,43 @@ enum EHotkeys
 #define STR(x) #x
 #define F_HOTKEY_NAME_ARR(name, defaultKey, defaultMod) \
 	_T(STR(name)),
+
+/**
+ * Key definitions
+ */
+#define KEY_NAMES(f)			\
+	f("BACK", VK_BACK)			\
+	f("TAB", VK_TAB)			\
+	f("ENTER", VK_RETURN)		\
+	f("MENU", VK_MENU)			\
+	f("PAUSE", VK_PAUSE)		\
+	f("CAPS", VK_CAPITAL)		\
+	f("ESCAPE", VK_ESCAPE)		\
+	f("SPACE", VK_SPACE)		\
+	f("PAGEUP", VK_PRIOR)		\
+	f("PAGEDOWN", VK_NEXT)		\
+	f("END", VK_END)			\
+	f("HOME", VK_HOME)			\
+	f("LEFT", VK_LEFT)			\
+	f("UP", VK_UP)				\
+	f("RIGHT", VK_RIGHT)		\
+	f("DOWN", VK_DOWN)			\
+	f("SELECT", VK_SELECT)		\
+	f("PRINT", VK_PRINT)		\
+	f("PRINTSCREEN", VK_SNAPSHOT)\
+	f("INSERT", VK_INSERT)		\
+	f("DELETE", VK_DELETE)		\
+	f("F1", VK_F1)				\
+	f("F2", VK_F2)				\
+	f("F3", VK_F3)				\
+	f("F4", VK_F4)				\
+	f("F5", VK_F5)				\
+	f("F6", VK_F6)				\
+	f("F7", VK_F7)				\
+	f("F8", VK_F8)				\
+	f("F9", VK_F9)				\
+	f("F10", VK_F10)			\
+	f("F11", VK_F11)			\
+	f("F12", VK_F12)
+
+#define AS_PAIRS(a, b) {a, b},

@@ -70,6 +70,8 @@
     <None Include="common\w3_VectorGrid.inl">
       <Filter>common\Source Files</Filter>
     </None>
+    <None Include="..\README.md" />
+    <None Include="..\CHANGES" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="w3wm.rc" />

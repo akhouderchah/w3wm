@@ -21,9 +21,9 @@ Simply run the `w3wm.exe` executable (it is highly recommended to run as admin; 
 w3wm will detect all your monitors and tile existing windows between those monitors.
 When w3wm is running, there will be an icon in the notification area (the right-side of the toolbar), such that there is never any ambiguity over whether or not w3wm is running.
 
+##### Default hotkeys
 Users can fully customize the keyboard combinations used to control w3wm, but the default hotkeys are provided below.
 
-##### Default hotkeys
 Move Focus | Keyboard Combination
 --- | ---
 up | Win+K
@@ -43,6 +43,13 @@ w3wm Function | Keyboard Combination
 Fullscreen current window | Win+F
 Close current window | Win+D
 Open new window | Win+N
+Open new console | Win+Enter
 Lock screen | Win+Home
 Restart w3wm | Win+R
 Quit w3wm | Win+Q
+
+##### Hotkey Customization
+In the same directory as `w3wm.exe`, there is a file called `config.ini`.
+This file enables the user to, among other things, customize the hotkeys used above.
+
+The default `config.ini`--which w3wm will automatically generate if the configuration file was deleted--describes the syntax used and provides usage examples and function/key names.

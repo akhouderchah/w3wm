@@ -32,6 +32,7 @@ w3Context::w3Context() :
 	m_hStub_OutRead(0), m_hStub_OutWrite(0),
 	m_hStubWnd(0),
 	m_IsInitialized(false),
+	m_IsReady(false),
 	m_PendingFocus(false)
 {}
 
@@ -297,11 +298,31 @@ bool w3Context::MoveWindow(EGridDirection direction, bool bWrapAround)
 
 bool w3Context::Start()
 {
-	// Load settings from ini
-	TCHAR iniDir[512];
-	GetCurrentDirectory(512, iniDir);
-	_tcscat_s(iniDir, 100, _T("\\config.ini"));
+	if(m_IsReady){ return true; }
 
+	// Find ini
+	TCHAR iniDir[512];
+	if(!GetModuleFileName(NULL, iniDir, 512))
+	{
+		DEBUG_MESSAGE("Error", "Failed to get w3wm's directory");
+		return false;
+	}
+
+	// Extract path from iniDir and append "config.ini" to path
+	TCHAR *pCurr = iniDir;
+	TCHAR *pEnd = pCurr;
+	TCHAR curr;
+	while((curr = *pCurr++))
+	{
+		if(curr == '\\' || curr == '/')
+		{
+			pEnd = pCurr;
+		}
+	}
+	*pEnd = '\0';
+	_tcscat_s(iniDir, 512, _T("config.ini"));
+
+	// Load settings from ini
 	if(UpdateHotkeys(iniDir))
 	{
 		// Get cmd path from ini
@@ -353,6 +374,7 @@ bool w3Context::Start()
 
 	GetWorkspace().FocusCurrent();
 
+	m_IsReady = true;
 	return true;
 }
 
@@ -360,6 +382,20 @@ bool w3Context::UpdateHotkeys(PTCHAR iniDir)
 {
 	// Initialize hotkeys with the defaults
 	HotkeyDef defs[] = { HOTKEYS(F_HOTKEY_ARR) };
+
+	// Initialize string -> virtual key map
+	VirtualKeyMap strToKey( {KEY_NAMES(AS_PAIRS)} );
+	for(char c = '0'; c <= '9'; ++c)
+	{
+		strToKey.insert({std::string{c},c});
+	}
+	for(char c = 'A'; c <= 'Z'; ++c)
+	{
+		strToKey.insert({std::string{c},c});
+
+		char lowerC = tolower(c);
+		strToKey.insert({std::string{lowerC},c});
+	}
 
 	// Modify defaults with the ini
 	LPCTSTR names[] = { HOTKEYS(F_HOTKEY_NAME_ARR) };
@@ -379,7 +415,7 @@ bool w3Context::UpdateHotkeys(PTCHAR iniDir)
 
 			if(res != 0)
 			{
-				ParseHotkey(&defs[i], inBuf);
+				ParseHotkey(inBuf, strToKey, &defs[i]);
 			}
 		}
 	}
@@ -517,6 +553,7 @@ bool w3Context::Execute64Bit()
 void w3Context::SetupBlacklist()
 {
 	//ADD_BLACKLIST(_T("#32770"));					// Windows message boxes
+	ADD_BLACKLIST_PREFIX(_T("HwndWrapper[ScreenToGif"));
 }
 
 bool w3Context::SetupTokens()
