@@ -322,6 +322,12 @@ bool w3Context::Start()
 	*pEnd = '\0';
 	_tcscat_s(iniDir, 512, _T("config.ini"));
 
+	// Generate default ini if config.ini doesn't exist
+	if(!PathFileExists(iniDir))
+	{
+		GenerateDefaultIni(iniDir);
+	}
+
 	// Load settings from ini
 	if(UpdateHotkeys(iniDir))
 	{

@@ -66,7 +66,7 @@ enum EHotkeys
  * Key definitions
  */
 #define KEY_NAMES(f)			\
-	f("BACK", VK_BACK)			\
+	f("BACKSPACE", VK_BACK)			\
 	f("TAB", VK_TAB)			\
 	f("ENTER", VK_RETURN)		\
 	f("MENU", VK_MENU)			\

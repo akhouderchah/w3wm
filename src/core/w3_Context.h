@@ -121,6 +121,11 @@ private:
 	void ParseHotkey(LPTSTR str, const VirtualKeyMap &keyMap, struct HotkeyDef *pHotkey) const;
 
 	/**
+	 * @brief Creates the default ini with the given path
+	 */
+	bool GenerateDefaultIni(LPCTSTR filename) const;
+
+	/**
 	 * @brief Perform DLL injection
 	 * @note On 64-bit machines, this also takes care of signaling the
 	 *       stub to perform injection.

@@ -53,3 +53,5 @@ In the same directory as `w3wm.exe`, there is a file called `config.ini`.
 This file enables the user to, among other things, customize the hotkeys used above.
 
 The default `config.ini`--which w3wm will automatically generate if the configuration file was deleted--describes the syntax used and provides usage examples and function/key names.
+Note that w3wm must be restarted in order for configuration file changes to be applied.
+The default hotkey to restart w3wm is Win+R.

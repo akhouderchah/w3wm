@@ -2,7 +2,7 @@ Changes for v0.2:
     * Ability to start applications with a low security integrity
     * Added window tracking when user manually changes focus
     * Added stub for 64-bit DLL injection
-	* Proper hotkey configuration added
+    * Proper hotkey configuration added
 
 Changes for v0.1:
     * Window & monitor tracking
