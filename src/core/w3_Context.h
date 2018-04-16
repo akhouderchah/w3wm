@@ -110,8 +110,21 @@ public:
 	 */
 	inline UINT GetShellMsgID() const{ return m_ShellMsgID; }
 
+	/**
+	 * @brief Start w3wm after initializing
+	 *
+	 * Initialize() itself contains the functionality
+	 * that only needs to be run on startup. Start contains
+	 * the functionality that needs to be run every time a
+	 * full restart occurs.
+	 *
+	 * A partial start currently only re-reads the configuration
+	 * file and updates hotkeys. Its use stems frm the fact that
+	 * windows will not be re-ordered, as in a full restart.
+	 */
+	bool Start(bool bPartialStart=false);
+
 private:
-	bool Start();
 	bool UpdateHotkeys(TCHAR *iniDir);
 
 	using VirtualKeyMap = std::unordered_map<std::string, UINT8>;

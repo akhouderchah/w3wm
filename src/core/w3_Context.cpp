@@ -202,7 +202,9 @@ bool w3Context::Restart()
 	// Clear state that will be replaced after calling Start()
 	s_Monitors.Clear();
 	m_ClassBlacklist.clear();
+	s_Workspaces.clear();
 
+	m_IsReady = false;
 	return Start();
 }
 
@@ -296,9 +298,9 @@ bool w3Context::MoveWindow(EGridDirection direction, bool bWrapAround)
 	return retVal;
 }
 
-bool w3Context::Start()
+bool w3Context::Start(bool bPartialStart)
 {
-	if(m_IsReady){ return true; }
+	if(m_IsReady && !bPartialStart){ return true; }
 
 	// Find ini
 	TCHAR iniDir[512];
@@ -333,6 +335,11 @@ bool w3Context::Start()
 	{
 		// Get cmd path from ini
 		GetPrivateProfileString(_T("Applications"), _T("Cmd"), _T("C:\\Windows\\System32\\cmd.exe"), m_CmdPath, 512, iniDir);
+	}
+
+	if(bPartialStart)
+	{
+		return true;
 	}
 
 	// Set up window exclusion by class name

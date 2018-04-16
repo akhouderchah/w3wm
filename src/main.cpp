@@ -64,6 +64,9 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 				case EH_W3WM_RESTART:
 					g_Context.Restart();
 					break;
+				case EH_W3WM_RESTART_PARTIAL:
+					g_Context.Start(true);
+					break;
 				case EH_W3WM_LOCK:
 					g_Context.LockScreen();
 					break;

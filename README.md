@@ -45,7 +45,8 @@ Close current window | Win+D
 Open new window | Win+N
 Open new console | Win+Enter
 Lock screen | Win+Home
-Restart w3wm | Win+R
+Re-read configuration file | Win+R
+Restart w3wm | Win+Shift+R
 Quit w3wm | Win+Q
 
 ##### Hotkey Customization
@@ -53,5 +54,5 @@ In the same directory as `w3wm.exe`, there is a file called `config.ini`.
 This file enables the user to, among other things, customize the hotkeys used above.
 
 The default `config.ini`--which w3wm will automatically generate if the configuration file was deleted--describes the syntax used and provides usage examples and function/key names.
-Note that w3wm must be restarted in order for configuration file changes to be applied.
-The default hotkey to restart w3wm is Win+R.
+Note that w3wm must be informed of a configuration file update in order for the changes to apply.
+The default hotkey to do this is Win+R.
