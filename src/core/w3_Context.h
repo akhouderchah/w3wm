@@ -127,7 +127,10 @@ public:
 private:
 	bool UpdateHotkeys(TCHAR *iniDir);
 
-	using VirtualKeyMap = std::unordered_map<std::string, UINT8>;
+	/**
+	 * @brief Maps key names to (VirtualKey, Mods) pairs
+	 */
+	using VirtualKeyMap = std::unordered_map<std::string, std::pair<UINT8, UINT8>>;
 	/**
 	 * @brief Set pHotkey based on passed in string
 	 */

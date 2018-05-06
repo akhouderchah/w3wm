@@ -394,24 +394,51 @@ bool w3Context::Start(bool bPartialStart)
 bool w3Context::UpdateHotkeys(PTCHAR iniDir)
 {
 	// Initialize hotkeys with the defaults
-	HotkeyDef defs[] = { HOTKEYS(F_HOTKEY_ARR) };
+	HotkeyDef defs[] = { HOTKEYS(HOTKEYS_AS_ARR) };
 
 	// Initialize string -> virtual key map
-	VirtualKeyMap strToKey( {KEY_NAMES(AS_PAIRS)} );
+	VirtualKeyMap strToKey( {KEY_NAMES(KEYS_AS_PAIRS)} );
 	for(char c = '0'; c <= '9'; ++c)
 	{
-		strToKey.insert({std::string{c},c});
+		strToKey.insert({std::string{c}, {c, 0}});
 	}
 	for(char c = 'A'; c <= 'Z'; ++c)
 	{
-		strToKey.insert({std::string{c},c});
+		strToKey.insert({std::string{c}, {c, 0}});
 
 		char lowerC = tolower(c);
-		strToKey.insert({std::string{lowerC},c});
+		strToKey.insert({std::string{lowerC}, {c, 0}});
 	}
 
+	/// Map 'special' ASCII characters to the VK codes
+	HKL layout = GetKeyboardLayout(0);
+	char c = 33;
+	do
+	{
+		switch(c)
+		{
+		case '0':
+			c = 58;
+			break;
+		case 'A':
+			c = 91;
+			break;
+		case 'a':
+			c = 123;
+			break;
+		}
+
+		// Get virtual-key code & mods for this character
+		SHORT vk = VkKeyScanEx(c, layout);
+		UINT8 mods = EM_SHIFT * !!(vk & (1 << 8));
+		mods |= EM_CTRL * !!(vk & (1 << 9));
+		mods |= EM_ALT * !!(vk & (1 << 10));
+
+		strToKey.insert({std::string{c}, {(UINT8)vk, mods}});
+	} while(++c < 127);
+
 	// Modify defaults with the ini
-	LPCTSTR names[] = { HOTKEYS(F_HOTKEY_NAME_ARR) };
+	LPCTSTR names[] = { HOTKEYS(HOTKEYS_AS_NAME_ARR) };
 	int max = ARR_SIZE(names);
 
 	if(!PathFileExists(iniDir))

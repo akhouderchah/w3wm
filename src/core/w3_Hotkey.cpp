@@ -64,8 +64,8 @@ void w3Context::ParseHotkey(LPTSTR tstr, const VirtualKeyMap &keyMap, HotkeyDef 
 		goto error;
 	}
 
-	pHotkey->m_MainKey = iter->second;
-	pHotkey->m_Modifiers = mods;
+	pHotkey->m_MainKey = iter->second.first;
+	pHotkey->m_Modifiers = mods | iter->second.second;
 
 shutdown:
 #ifdef _UNICODE
@@ -132,7 +132,8 @@ bool w3Context::GenerateDefaultIni(LPCTSTR filename) const
 		";; +-----+------------------+\r\n"
 		";\r\n"
 		"; Basekeys:\r\n"
-		";; For letters, numbers, and F1-F12 the basekey name is simply the intended key.\r\n"
+		";; For all printable symbols (e.g. 'a', '/', '.', '0', etc) and F1-F12\r\n"
+		";; the basekey name is simply the intended key.\r\n"
 		";; Special basekeys are presented below:\r\n"
 		";; +--------------+------------------+\r\n"
 		";; | Basekey Name |    Description   |\r\n"
@@ -167,6 +168,9 @@ bool w3Context::GenerateDefaultIni(LPCTSTR filename) const
 		";\r\n"
 		"; Quit w3wm with Win+Shift+Escape\r\n"
 		";;; w3wm_close=W-s-Escape\r\n"
+		";\r\n"
+		"; Move window right with Win+Ctrl+-\r\n"
+		";;; wnd_RIght=C-w--\r\n"
 		";\r\n"
 		"; Move focus left with Ctrl+F\r\n"
 		";;; focus_left=C-f\r\n"

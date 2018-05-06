@@ -41,26 +41,26 @@ struct HotkeyDef
 	f(W3WM_LOCK, VK_HOME, EM_WIN) \
 	f(W3WM_OPEN_CONSOLE, VK_RETURN, EM_WIN)
 
-#define F_HOTKEY_ENUM(name, defaultKey, defaultMod) \
+#define HOTKEYS_AS_ENUM(name, defaultKey, defaultMod) \
 	EH_ ## name,
 
 enum EHotkeys
 {
 	EH_NULL = 0,
-	HOTKEYS(F_HOTKEY_ENUM)
+	HOTKEYS(HOTKEYS_AS_ENUM)
 };
 
-#define F_HOTKEY_COUNT(name, defaultKey, defaultMod) \
+#define HOTKEYS_AS_COUNT(name, defaultKey, defaultMod) \
 	1 +
 
-#define F_ACTIVE_HOTKEY_COUNT(name, defaultKey, defaultMod) \
+#define HOTKEYS_AS_ACTIVE_COUNT(name, defaultKey, defaultMod) \
 	(defaultKey != 0) +
 
-#define F_HOTKEY_ARR(name, defaultKey, defaultMod) \
+#define HOTKEYS_AS_ARR(name, defaultKey, defaultMod) \
 	{EH_ ## name, defaultKey, defaultMod},
 
 #define STR(x) #x
-#define F_HOTKEY_NAME_ARR(name, defaultKey, defaultMod) \
+#define HOTKEYS_AS_NAME_ARR(name, defaultKey, defaultMod) \
 	_T(STR(name)),
 
 /**
@@ -101,4 +101,4 @@ enum EHotkeys
 	f("F11", VK_F11)			\
 	f("F12", VK_F12)
 
-#define AS_PAIRS(a, b) {a, b},
+#define KEYS_AS_PAIRS(a, b) {a, {b, 0}},

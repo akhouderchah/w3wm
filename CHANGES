@@ -3,6 +3,7 @@ Changes for v0.2:
     * Added window tracking when user manually changes focus
     * Added stub for 64-bit DLL injection
     * Proper hotkey configuration added
+    * Allow hotkeys using 'special' ASCII characters (e.g. '/', '.', etc)
 
 Changes for v0.1:
     * Window & monitor tracking
