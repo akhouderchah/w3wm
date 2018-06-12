@@ -1,7 +1,7 @@
 # w3wm
 
 ### What is it?
-![alt text](https://github.com/Khouderchah-Alex/w3wm/blob/master/docs/w3wm_Intro.gif "Intro GIF")
+![alt text](https://github.com/Khouderchah-Alex/w3wm/blob/master/docs/images/w3wm_Intro.gif "Intro GIF")
 
 w3wm is a tiling window manger for Windows, similar to i3 on Linux.
 It keeps your windows organized and allows you to use keyboard shortcuts in order to:
@@ -56,3 +56,10 @@ This file enables the user to, among other things, customize the hotkeys used ab
 The default `config.ini`--which w3wm will automatically generate if the configuration file was deleted--describes the syntax used and provides usage examples and function/key names.
 Note that w3wm must be informed of a configuration file update in order for the changes to apply.
 The default hotkey to do this is Win+R.
+
+### How do I learn how it works?
+The best starting point is the
+[architecture documentation](https://github.com/Khouderchah-Alex/w3wm/blob/master/docs/Architecture.md), 
+which describes the general runtime structure of w3wm. From there, the w3Context would be a good place 
+to get a top-down perspective of the main w3wm logic. Any technical questions or concerns can be made as 
+a Github Issue with the question tag.
